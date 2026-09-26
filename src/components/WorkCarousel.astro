@@ -1,0 +1,112 @@
+---
+import { Picture } from 'astro:assets';
+import { captionLine2, type Work } from '../lib/works';
+
+interface Props {
+  works: Work[];
+}
+
+const { works } = Astro.props;
+---
+
+<main>
+  <div class="stack" data-carousel>
+    {works.map((work, i) => (
+      <figure class="work" data-active={i === 0 ? 'true' : 'false'}>
+        <div class="plate" style={`aspect-ratio: ${work.data.aspect};`}>
+          <Picture
+            src={work.data.image}
+            alt={work.data.title}
+            formats={['avif', 'webp']}
+            fallbackFormat="jpeg"
+            widths={[620, 1240]}
+            sizes="(min-width: 900px) 620px, 100vw"
+            loading={i === 0 ? 'eager' : 'lazy'}
+            fetchpriority={i === 0 ? 'high' : 'auto'}
+          />
+        </div>
+        <figcaption>
+          <span>{work.data.title}</span>
+          <span>{captionLine2(work)}</span>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</main>
+
+<style>
+  main {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: clamp(10px, 2vw, 28px) var(--pad-x) clamp(28px, 4vw, 52px);
+  }
+  .stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 620px;
+  }
+  .work {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 900ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .work[data-active='true'] {
+    opacity: 1;
+  }
+  .work .plate {
+    width: 100%;
+    overflow: hidden;
+    background: var(--frame-bg);
+    box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.45);
+  }
+  .work .plate picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .work .plate img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .work figcaption {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .work figcaption span {
+    font-size: 15px;
+    letter-spacing: 0.01em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .work {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const slides = [...document.querySelectorAll<HTMLElement>('.work')];
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (slides.length > 1 && !reducedMotion) {
+    let i = 0;
+    setInterval(() => {
+      slides[i].dataset.active = 'false';
+      i = (i + 1) % slides.length;
+      slides[i].dataset.active = 'true';
+    }, 5000);
+  }
+</script>

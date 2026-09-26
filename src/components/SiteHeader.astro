@@ -1,0 +1,345 @@
+---
+const socials = [
+  { href: '#', title: 'Instagram', icon: '/icons/instagram.svg' },
+  { href: '#', title: 'YouTube', icon: '/icons/youtube.svg' },
+  { href: '#', title: 'bilibili', icon: '/icons/bilibili.svg' },
+];
+
+const workYears = [
+  { cls: 'y1', label: '2025 – 2024', href: '/work/2025-2024' },
+  { cls: 'y2', label: '2023 – 2022', href: '/work/2023-2022' },
+  { cls: 'y3', label: '2021 – 2020', href: '/work/2021-2020' },
+  { cls: 'y4', label: '2019 – 2018', href: '/work/2019-2018' },
+  { cls: 'y5', label: 'Before 2017', href: '/work/before-2017' },
+];
+
+const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-forces' }];
+---
+
+<header class="site-head">
+  <a class="wordmark" href="/">Einphix</a>
+
+  <nav class="nav">
+    <div class="has-menu">
+      <a class="nav-link" href="/work" aria-current="page">Work</a>
+      <div class="menu">
+        {workYears.map((y) => (
+          <a class={y.cls} href={y.href}>{y.label}</a>
+        ))}
+      </div>
+    </div>
+    <div class="has-menu">
+      <a class="nav-link" href="/series">Series</a>
+      <div class="menu">
+        {seriesItems.map((s) => (
+          <a class={s.cls} href={s.href}>{s.label}</a>
+        ))}
+      </div>
+    </div>
+    <a class="nav-link" href="/sketches">Sketches</a>
+    <a class="nav-link" href="/about">About</a>
+    <a class="nav-link" href="/commission">Commission</a>
+    <a class="nav-link" href="/class">Class</a>
+    <span class="socials">
+      {socials.map((s) => (
+        <a class="social-chip" href={s.href} title={s.title}>
+          <img src={s.icon} alt={s.title} width="15" height="15" />
+        </a>
+      ))}
+      <a class="social-chip rednote" href="#" title="rednote">小</a>
+    </span>
+  </nav>
+
+  <button class="burger" type="button" aria-label="Menu" aria-expanded="false" data-burger>
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<nav class="mobile-nav" data-open="false" data-mobile-nav>
+  <button class="mobile-row" type="button" data-section="work">Work <span class="plus">+</span></button>
+  <div class="mobile-sub" data-sub="work" data-open="false">
+    {workYears.map((y) => (
+      <a class={y.cls} href={y.href}>{y.label}</a>
+    ))}
+  </div>
+  <button class="mobile-row" type="button" data-section="series">Series <span class="plus">+</span></button>
+  <div class="mobile-sub" data-sub="series" data-open="false">
+    {seriesItems.map((s) => (
+      <a class={s.cls} href={s.href}>{s.label}</a>
+    ))}
+  </div>
+  <a class="mobile-row" href="/sketches">Sketches</a>
+  <a class="mobile-row" href="/about">About</a>
+  <a class="mobile-row" href="/commission">Commission</a>
+  <a class="mobile-row" href="/class">Class</a>
+  <span class="socials">
+    {socials.map((s) => (
+      <a class="social-chip" href={s.href} title={s.title}>
+        <img src={s.icon} alt={s.title} width="17" height="17" />
+      </a>
+    ))}
+    <a class="social-chip rednote" href="#" title="rednote">小</a>
+  </span>
+</nav>
+
+<style>
+  .site-head {
+    position: relative;
+    z-index: 40;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: var(--pad-y) var(--pad-x);
+  }
+  .wordmark {
+    font-size: clamp(13px, 1.2vw, 16px);
+    font-weight: 300;
+    letter-spacing: 0.38em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2vw, 28px);
+  }
+  .nav-link {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0.66;
+    transition: opacity 180ms;
+  }
+  .nav-link:hover {
+    opacity: 1;
+  }
+  .nav-link[aria-current='page'] {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 1px;
+  }
+  .has-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ---------- dropdown ---------- */
+  .menu {
+    position: absolute;
+    top: calc(100% + 18px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 40;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 26px;
+    background: var(--panel);
+    box-shadow: 0 22px 48px -24px rgba(0, 0, 0, 0.3), 0 0 0 1px oklch(0 0 0 / 0.05);
+  }
+  .has-menu:hover .menu,
+  .has-menu:focus-within .menu {
+    display: flex;
+    animation: fadeIn 160ms ease both;
+  }
+  .menu::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translateX(-50%) rotate(45deg);
+    background: var(--panel);
+  }
+  .menu a {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    white-space: nowrap;
+    transition: color 160ms;
+  }
+  .menu a:hover {
+    color: var(--ink);
+  }
+  .y1 {
+    color: var(--year-1);
+  }
+  .y2 {
+    color: var(--year-2);
+  }
+  .y3 {
+    color: var(--year-3);
+  }
+  .y4 {
+    color: var(--year-4);
+  }
+  .y5 {
+    color: var(--year-5);
+  }
+
+  /* ---------- socials ---------- */
+  .socials {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 8px;
+  }
+  .social-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--social-bg);
+    opacity: 0.9;
+    transition: opacity 180ms;
+  }
+  .social-chip:hover {
+    opacity: 1;
+  }
+  .social-chip img {
+    display: block;
+  }
+  .rednote {
+    font-size: 12px;
+    line-height: 1;
+    color: oklch(1 0 0);
+  }
+
+  /* ---------- hamburger ---------- */
+  .burger {
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    width: 44px;
+    height: 44px;
+    margin-right: -10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .burger span {
+    display: block;
+    width: 18px;
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .mobile-nav {
+    display: none;
+  }
+  .mobile-nav[data-open='true'] {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 4px var(--pad-x) 24px;
+    border-top: 1px solid var(--rule);
+    animation: slideIn 200ms ease both;
+  }
+  .mobile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 16px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--rule);
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+  }
+  .mobile-row .plus {
+    font-size: 16px;
+    line-height: 1;
+    opacity: 0.5;
+  }
+  .mobile-sub {
+    display: none;
+  }
+  .mobile-sub[data-open='true'] {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px 0 18px 2px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .mobile-sub a {
+    font-size: 13px;
+    letter-spacing: 0.2em;
+  }
+  .mobile-nav .socials {
+    gap: 10px;
+    margin: 0;
+    padding-top: 24px;
+  }
+  .mobile-nav .social-chip {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+  }
+  .mobile-nav .rednote {
+    font-size: 13px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (max-width: 899px) {
+    .nav {
+      display: none;
+    }
+    .burger {
+      display: flex;
+    }
+  }
+</style>
+
+<script>
+  const burger = document.querySelector<HTMLButtonElement>('[data-burger]');
+  const mobileNav = document.querySelector<HTMLElement>('[data-mobile-nav]');
+
+  burger?.addEventListener('click', () => {
+    if (!mobileNav) return;
+    const open = mobileNav.dataset.open !== 'true';
+    mobileNav.dataset.open = String(open);
+    burger.setAttribute('aria-expanded', String(open));
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-section]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sub = document.querySelector<HTMLElement>(`[data-sub="${btn.dataset.section}"]`);
+      if (!sub) return;
+      sub.dataset.open = sub.dataset.open === 'true' ? 'false' : 'true';
+    });
+  });
+</script>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Einphix — Home (reference implementation)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(0.968 0.004 85);
+    --panel: oklch(0.995 0.002 85);
+    --ink: oklch(0.22 0.006 80);
+    --rule: oklch(0.9 0.005 85);
+    --frame-bg: oklch(0.9 0.005 85);
+    --year-1: oklch(0.22 0.008 265);
+    --year-2: oklch(0.5 0.008 265);
+    --year-3: oklch(0.62 0.008 265);
+    --year-4: oklch(0.7 0.008 265);
+    --year-5: oklch(0.76 0.008 265);
+    --pad-y: clamp(16px, 2.8vw, 38px);
+    --pad-x: clamp(18px, 3.4vw, 46px);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    min-height: 100vh; display: flex; flex-direction: column;
+    background: var(--bg); color: var(--ink);
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  }
+  a { color: var(--ink); text-decoration: none; }
+
+  /* ---------- header ---------- */
+  .site-head {
+    position: relative; z-index: 40; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; padding: var(--pad-y) var(--pad-x);
+  }
+  .wordmark {
+    font-size: clamp(13px, 1.2vw, 16px); font-weight: 300;
+    letter-spacing: 0.38em; text-transform: uppercase; white-space: nowrap;
+  }
+  .nav { display: flex; align-items: center; gap: clamp(16px, 2vw, 28px); }
+  .nav-link {
+    font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+    white-space: nowrap; opacity: 0.66; transition: opacity 180ms;
+  }
+  .nav-link:hover { opacity: 1; }
+  .nav-link[aria-current="page"] {
+    opacity: 1; text-decoration: underline;
+    text-underline-offset: 6px; text-decoration-thickness: 1px;
+  }
+  .has-menu { position: relative; display: flex; align-items: center; }
+
+  /* ---------- dropdown ---------- */
+  .menu {
+    position: absolute; top: calc(100% + 18px); left: 50%; transform: translateX(-50%);
+    z-index: 40; display: none; flex-direction: column; gap: 12px;
+    padding: 20px 26px; background: var(--panel);
+    box-shadow: 0 22px 48px -24px rgba(0,0,0,0.3), 0 0 0 1px oklch(0 0 0 / 0.05);
+  }
+  .has-menu:hover .menu, .has-menu:focus-within .menu {
+    display: flex; animation: fadeIn 160ms ease both;
+  }
+  .menu::before {
+    content: ""; position: absolute; top: -5px; left: 50%;
+    width: 10px; height: 10px; transform: translateX(-50%) rotate(45deg);
+    background: var(--panel);
+  }
+  .menu a {
+    font-size: 12px; letter-spacing: 0.2em; white-space: nowrap; transition: color 160ms;
+  }
+  .menu a:hover { color: var(--ink); }
+  .y1 { color: var(--year-1); } .y2 { color: var(--year-2); }
+  .y3 { color: var(--year-3); } .y4 { color: var(--year-4); } .y5 { color: var(--year-5); }
+
+  /* ---------- socials ---------- */
+  .socials { display: flex; align-items: center; gap: 15px; margin-left: 8px; }
+  .socials a { display: flex; opacity: 0.7; transition: opacity 180ms; }
+  .socials a:hover { opacity: 1; }
+  .socials img { display: block; }
+  .rednote {
+    display: flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border: 1px solid oklch(0.55 0.006 80);
+    border-radius: 50%; font-size: 9px; line-height: 1; opacity: 0.8;
+  }
+
+  /* ---------- hamburger ---------- */
+  .burger {
+    display: none; flex-direction: column; align-items: flex-end; justify-content: center;
+    gap: 4px; width: 44px; height: 44px; margin-right: -10px;
+    background: transparent; border: none; cursor: pointer;
+  }
+  .burger span { display: block; width: 18px; height: 1px; background: var(--ink); }
+
+  .mobile-nav { display: none; }
+  .mobile-nav[data-open="true"] {
+    flex: 0 0 auto; display: flex; flex-direction: column;
+    padding: 4px var(--pad-x) 24px; border-top: 1px solid var(--rule);
+    animation: slideIn 200ms ease both;
+  }
+  .mobile-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%; padding: 16px 0; background: transparent; border: none;
+    border-bottom: 1px solid var(--rule); font: inherit; font-size: 13px;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink);
+    text-align: left; cursor: pointer;
+  }
+  .mobile-row .plus { font-size: 16px; line-height: 1; opacity: 0.5; }
+  .mobile-sub { display: none; }
+  .mobile-sub[data-open="true"] {
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 16px 0 18px 2px; border-bottom: 1px solid var(--rule);
+  }
+  .mobile-sub a { font-size: 13px; letter-spacing: 0.2em; }
+  .mobile-nav .socials { gap: 22px; margin: 0; padding-top: 24px; }
+
+  /* ---------- hero carousel ---------- */
+  main {
+    flex: 1 1 auto; min-height: 0; display: flex;
+    justify-content: center; align-items: flex-start;
+    padding: clamp(10px, 2vw, 28px) var(--pad-x) clamp(28px, 4vw, 52px);
+  }
+  .stack { display: grid; grid-template-columns: 1fr; width: 100%; max-width: 620px; }
+  .work {
+    grid-column: 1; grid-row: 1; margin: 0;
+    display: flex; flex-direction: column;
+    opacity: 0; pointer-events: none;
+    transition: opacity 900ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .work[data-active="true"] { opacity: 1; }
+  .work .plate {
+    width: 100%; overflow: hidden; background: var(--frame-bg);
+    box-shadow: 0 40px 80px -40px rgba(0,0,0,0.45);
+  }
+  .work .plate img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .work figcaption { margin-top: 18px; display: flex; flex-direction: column; gap: 5px; }
+  .work figcaption span { font-size: 15px; letter-spacing: 0.01em; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 899px) {
+    .nav { display: none; }
+    .burger { display: flex; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .work { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <a class="wordmark" href="/">Einphix</a>
+
+  <nav class="nav">
+    <div class="has-menu">
+      <a class="nav-link" href="/work" aria-current="page">Work</a>
+      <div class="menu">
+        <a class="y1" href="/work/2025-2024">2025 – 2024</a>
+        <a class="y2" href="/work/2023-2022">2023 – 2022</a>
+        <a class="y3" href="/work/2021-2020">2021 – 2020</a>
+        <a class="y4" href="/work/2019-2018">2019 – 2018</a>
+        <a class="y5" href="/work/before-2017">Before 2017</a>
+      </div>
+    </div>
+    <div class="has-menu">
+      <a class="nav-link" href="/series">Series</a>
+      <div class="menu">
+        <a class="y1" href="/series/furry-forces">Furry Forces</a>
+      </div>
+    </div>
+    <a class="nav-link" href="/sketches">Sketches</a>
+    <a class="nav-link" href="/about">About</a>
+    <a class="nav-link" href="/commission">Commission</a>
+    <a class="nav-link" href="/class">Class</a>
+    <span class="socials">
+      <a href="#" title="Instagram"><img src="https://cdn.simpleicons.org/instagram/1a1a1a" alt="Instagram" width="16" height="16"></a>
+      <a class="rednote" href="#" title="rednote">小</a>
+      <a href="#" title="YouTube"><img src="https://cdn.simpleicons.org/youtube/1a1a1a" alt="YouTube" width="16" height="16"></a>
+      <a href="#" title="bilibili"><img src="https://cdn.simpleicons.org/bilibili/1a1a1a" alt="bilibili" width="16" height="16"></a>
+    </span>
+  </nav>
+
+  <button class="burger" type="button" aria-label="Menu" aria-expanded="false" data-burger>
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<nav class="mobile-nav" data-open="false" data-mobile-nav>
+  <button class="mobile-row" type="button" data-section="work">Work <span class="plus">+</span></button>
+  <div class="mobile-sub" data-sub="work" data-open="false">
+    <a class="y1" href="/work/2025-2024">2025 – 2024</a>
+    <a class="y2" href="/work/2023-2022">2023 – 2022</a>
+    <a class="y3" href="/work/2021-2020">2021 – 2020</a>
+    <a class="y4" href="/work/2019-2018">2019 – 2018</a>
+    <a class="y5" href="/work/before-2017">Before 2017</a>
+  </div>
+  <button class="mobile-row" type="button" data-section="series">Series <span class="plus">+</span></button>
+  <div class="mobile-sub" data-sub="series" data-open="false">
+    <a class="y1" href="/series/furry-forces">Furry Forces</a>
+  </div>
+  <a class="mobile-row" href="/sketches">Sketches</a>
+  <a class="mobile-row" href="/about">About</a>
+  <a class="mobile-row" href="/commission">Commission</a>
+  <a class="mobile-row" href="/class">Class</a>
+  <span class="socials">
+    <a href="#" title="Instagram"><img src="https://cdn.simpleicons.org/instagram/1a1a1a" alt="Instagram" width="18" height="18"></a>
+    <a class="rednote" href="#" title="rednote" style="width:18px; height:18px; font-size:11px;">小</a>
+    <a href="#" title="YouTube"><img src="https://cdn.simpleicons.org/youtube/1a1a1a" alt="YouTube" width="18" height="18"></a>
+    <a href="#" title="bilibili"><img src="https://cdn.simpleicons.org/bilibili/1a1a1a" alt="bilibili" width="18" height="18"></a>
+  </span>
+</nav>
+
+<main>
+  <div class="stack" data-carousel>
+    <figure class="work" data-active="true">
+      <div class="plate" style="aspect-ratio: 3 / 2;">
+        <img src="images/IMG_63510.jpg" alt="Oil painting of three rabbits in tactical gear">
+      </div>
+      <figcaption>
+        <span>Untitled (Three)</span>
+        <span>2024, oil on canvas, 35 x 24 in / 90 x 60 cm</span>
+      </figcaption>
+    </figure>
+
+    <figure class="work">
+      <div class="plate" style="aspect-ratio: 1 / 1;">
+        <img src="images/A4-8x8-cloude-F.png" alt="Oil painting of power lines against a cloud at dusk">
+      </div>
+      <figcaption>
+        <span>Untitled (Wires)</span>
+        <span>2024, oil on canvas, 20 x 20 in / 51 x 51 cm</span>
+      </figcaption>
+    </figure>
+
+    <figure class="work">
+      <div class="plate" style="aspect-ratio: 4 / 3;">
+        <img src="images/A-blured.png" alt="Oil painting of Adélie penguins on ice">
+      </div>
+      <figcaption>
+        <span>Untitled (Adélie)</span>
+        <span>2024, oil on canvas, 16 x 12 in / 40 x 30 cm</span>
+      </figcaption>
+    </figure>
+  </div>
+</main>
+
+<script>
+  // Hamburger
+  const burger = document.querySelector('[data-burger]');
+  const mobileNav = document.querySelector('[data-mobile-nav]');
+  burger.addEventListener('click', () => {
+    const open = mobileNav.dataset.open !== 'true';
+    mobileNav.dataset.open = String(open);
+    burger.setAttribute('aria-expanded', String(open));
+  });
+
+  // Mobile accordions
+  document.querySelectorAll('[data-section]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sub = document.querySelector('[data-sub="' + btn.dataset.section + '"]');
+      sub.dataset.open = sub.dataset.open === 'true' ? 'false' : 'true';
+    });
+  });
+
+  // Crossfade carousel — 5s dwell, 900ms fade
+  const slides = [...document.querySelectorAll('.work')];
+  let i = 0;
+  setInterval(() => {
+    slides[i].dataset.active = 'false';
+    i = (i + 1) % slides.length;
+    slides[i].dataset.active = 'true';
+  }, 5000);
+</script>
+</body>
+</html>

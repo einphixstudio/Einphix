@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import WorkCarousel from '../components/WorkCarousel.astro';
+import { getFeaturedWorks } from '../lib/works';
+
+const works = await getFeaturedWorks();
+---
+
+<Layout title="Einphix">
+  <SiteHeader />
+  <WorkCarousel works={works} />
+</Layout>
