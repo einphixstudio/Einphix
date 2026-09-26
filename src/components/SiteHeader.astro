@@ -132,13 +132,21 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
   .has-menu {
     position: relative;
     display: flex;
-    align-items: center;
+    /* flex-start (not center): the added padding-bottom below must not
+       shift the link's own vertical position within the header row. */
+    align-items: flex-start;
+    /* Invisible hover bridge: extends the hoverable box down through the
+       visual gap to the dropdown, so moving the cursor from the link to the
+       menu never leaves .has-menu and loses :hover. The negative margin
+       cancels the padding so it doesn't affect the header's own layout. */
+    padding-bottom: 18px;
+    margin-bottom: -18px;
   }
 
   /* ---------- dropdown ---------- */
   .menu {
     position: absolute;
-    top: calc(100% + 18px);
+    top: 100%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 40;
@@ -332,6 +340,12 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
     }
     .burger {
       display: flex;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .menu,
+    .mobile-nav {
+      animation: none;
     }
   }
 </style>

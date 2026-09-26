@@ -1,0 +1,68 @@
+---
+import { YEAR_BUCKETS } from '../lib/workBuckets';
+
+interface Props {
+  currentSlug: string;
+}
+
+const { currentSlug } = Astro.props;
+---
+
+<div class="years">
+  <nav>
+    {YEAR_BUCKETS.map((bucket) => (
+      <a
+        href={`/work/${bucket.slug}`}
+        aria-current={bucket.slug === currentSlug ? 'page' : undefined}
+      >
+        {bucket.label}
+      </a>
+    ))}
+  </nav>
+</div>
+
+<style>
+  .years {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    padding: 0 var(--pad-x) 20px;
+  }
+  .years nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: clamp(12px, 1.4vw, 20px);
+  }
+  .years a {
+    padding: 4px 0;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+    border-bottom: 1px solid transparent;
+    transition: color 220ms, border-color 220ms;
+  }
+  .years a:nth-child(1) {
+    color: oklch(0.66 0.006 265);
+  }
+  .years a:nth-child(2) {
+    color: oklch(0.7 0.006 265);
+  }
+  .years a:nth-child(3) {
+    color: oklch(0.74 0.006 265);
+  }
+  .years a:nth-child(4) {
+    color: oklch(0.78 0.006 265);
+  }
+  .years a:nth-child(5) {
+    color: oklch(0.82 0.006 265);
+  }
+  .years a:hover {
+    color: oklch(0.2 0.006 80);
+  }
+  .years a[aria-current='page'] {
+    color: oklch(0.2 0.006 80);
+    border-bottom-color: oklch(0.2 0.006 80);
+  }
+</style>
