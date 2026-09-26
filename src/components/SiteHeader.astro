@@ -1,9 +1,16 @@
 ---
 const socials = [
-  { href: '#', title: 'Instagram', icon: '/icons/instagram.svg' },
-  { href: '#', title: 'YouTube', icon: '/icons/youtube.svg' },
-  { href: '#', title: 'bilibili', icon: '/icons/bilibili.svg' },
+  { href: 'https://www.instagram.com/einphix/', title: 'Instagram', icon: '/icons/instagram.svg' },
+  { href: 'https://www.youtube.com/@einphix', title: 'YouTube', icon: '/icons/youtube.svg' },
+  {
+    href: 'https://space.bilibili.com/97339116?spm_id_from=333.788.0.0',
+    title: 'bilibili',
+    icon: '/icons/bilibili.svg',
+  },
 ];
+
+const rednoteHref =
+  'https://www.rednote.com/user/profile/6002372b000000000100a384?xsec_token=ABl914SVjtnUvxyM-hBEdSbPHUQxNwg8oVVdY7dwzZzHE%3D&xsec_source=pc_user';
 
 const workYears = [
   { cls: 'y1', label: '2025 – 2024', href: '/work/2025-2024' },
@@ -42,11 +49,11 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
     <a class="nav-link" href="/class">Class</a>
     <span class="socials">
       {socials.map((s) => (
-        <a class="social-chip" href={s.href} title={s.title}>
+        <a class="social-chip" href={s.href} title={s.title} target="_blank" rel="noopener noreferrer">
           <img src={s.icon} alt={s.title} width="15" height="15" />
         </a>
       ))}
-      <a class="social-chip rednote" href="#" title="rednote">小</a>
+      <a class="social-chip rednote" href={rednoteHref} title="rednote" target="_blank" rel="noopener noreferrer">小</a>
     </span>
   </nav>
 
@@ -74,11 +81,11 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
   <a class="mobile-row" href="/class">Class</a>
   <span class="socials">
     {socials.map((s) => (
-      <a class="social-chip" href={s.href} title={s.title}>
+      <a class="social-chip" href={s.href} title={s.title} target="_blank" rel="noopener noreferrer">
         <img src={s.icon} alt={s.title} width="17" height="17" />
       </a>
     ))}
-    <a class="social-chip rednote" href="#" title="rednote">小</a>
+    <a class="social-chip rednote" href={rednoteHref} title="rednote" target="_blank" rel="noopener noreferrer">小</a>
   </span>
 </nav>
 
@@ -236,13 +243,18 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
   .mobile-nav {
     display: none;
   }
-  .mobile-nav[data-open='true'] {
-    flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    padding: 4px var(--pad-x) 24px;
-    border-top: 1px solid var(--rule);
-    animation: slideIn 200ms ease both;
+  /* Gated to the mobile breakpoint so a stale data-open="true" (e.g. opened on
+     narrow, then the window widened without a reload) can never reserve
+     layout space or show at desktop widths. */
+  @media (max-width: 899px) {
+    .mobile-nav[data-open='true'] {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      padding: 4px var(--pad-x) 24px;
+      border-top: 1px solid var(--rule);
+      animation: slideIn 200ms ease both;
+    }
   }
   .mobile-row {
     display: flex;

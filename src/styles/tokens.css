@@ -37,3 +37,9 @@ a {
   color: var(--ink);
   text-decoration: none;
 }
+
+/* Single-screen pages (home carousel): lock to the viewport instead of growing with content. */
+body.fit-viewport {
+  height: 100vh;
+  overflow: hidden;
+}

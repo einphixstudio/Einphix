@@ -7,7 +7,7 @@ import { getFeaturedWorks } from '../lib/works';
 const works = await getFeaturedWorks();
 ---
 
-<Layout title="Einphix">
+<Layout title="Einphix" fitViewport>
   <SiteHeader />
   <WorkCarousel works={works} />
 </Layout>
