@@ -47,6 +47,34 @@ npm run preview  # 本地预览构建结果
 
 CSV 里没写的字段（比如某天想加个 `alt` 文字描述）需要改 `src/content.config.ts` 里的 schema 定义。
 
+## 怎么改 Commission 页面的内容
+
+`/commission` 页面的价格、流程步骤、加价项、促销横条，都是从 `src/content/commission/` 下面 4 个小表格读的，跟画作数据完全分开。都用 Excel 打开改，改完跑 `npm run dev` 看效果：
+
+| 文件 | 内容 | 字段说明 |
+| --- | --- | --- |
+| `pricing.csv` | 价格表 | `id`=尺寸（比如 `9 x 12`），`animal`/`portrait`=对应价格（纯数字，不用写 `$`） |
+| `steps.csv` | "如何委托"的流程步骤 | `step`=第几步（数字，可以重复——同一个 `step` 数字下的几行会显示在同一个编号下面，比如你截图里"2"下面有两块内容）；`title`/`description`=每块的标题和说明。`description` 里想换行就直接在 Excel 单元格里按 Alt+Enter 换行，会保留 |
+| `addons.csv` | 加价项 | `order`=显示顺序（数字），`label`=加价项名称，`description`=说明 |
+| `settings.csv` | 零散的开关和文案 | 两列表格：`id`=设置项名字，`value`=内容。目前有这些 `id`：`promoEnabled`（`TRUE`/`FALSE`，促销横条的总开关）、`promoStart`/`promoEnd`（促销的起止日期，格式 `2026-12-01`，都留空就是"只要开关是 TRUE 就一直显示"）、`promoText`（促销文案）、`heroHeading`/`heroSubtext`（顶部大标题和副标题）、`heroImageId`（顶部圆形展示图用哪张画，填 `works.csv` 里的 `id`）、`pricingIntro`（价格表上方说明）、`depositText`（押金说明） |
+
+**促销横条现在设的是圣诞活动**（`promoEnabled=TRUE`，`promoStart=2026-12-01`，`promoEnd=2027-01-10`）——只有当前日期落在这个区间内才会显示，区间外自动隐藏，不用你手动记得开关。
+
+⚠️ **这是静态网站**：日期判断是在**网站构建的时候**算的，不是访客看网页那一刻实时算的。也就是说如果 12 月 1 号那天网站没有重新部署，横条不会准时在那天出现，要等到下一次构建（比如你推送了别的改动，或者手动触发一次部署）才会生效。如果想要精确到那天自动生效，需要设置一个定时任务在那天触发重新部署——目前还没做这个，先手动留意就行。
+
+## 怎么改 Class 页面的内容
+
+`/class` 页面的画材清单、颜色清单、FAQ，都是从 `src/content/class/` 下面 4 个小表格读的。都用 Excel 打开改，改完跑 `npm run dev` 看效果：
+
+| 文件 | 内容 | 字段说明 |
+| --- | --- | --- |
+| `supplies.csv` | 上面画材清单的卡片（Canson 纸、颜料、笔刷等） | `order`=显示顺序（数字），`name`=名称，`description`=说明（想换行就 Alt+Enter），`link`=Amazon 购买链接（留空就不显示购买按钮），`imageExt`=图片后缀（比如 `jpg`；留空就显示"Photo coming soon"占位，图片要放在 `public/class-supplies/<id>.<后缀>`，文件名 = 这一行的 `id`） |
+| `colors.csv` | 高亮的 Michaels 丙烯颜料块里的"必买颜色"列表 | `order`=显示顺序，`name`=颜色名，`note`=备注（比如"建议买 250ml"，没有就留空） |
+| `faq.csv` | 底部 FAQ 手风琴 | `order`=显示顺序，`question`=问题，`answer`=答案（中英双语直接写在同一格里，想换行就 Alt+Enter） |
+| `settings.csv` | 零散文案 | `id`=设置项名字，`value`=内容。目前有：`suppliesHeading`/`colorsHeading`/`faqHeading`（三个区块的标题）、`acrylicIntro`（"去本地 Michaels 购买"那行提示）、`acrylicName`/`acrylicNote`（推荐的丙烯颜料名称和说明）、`acrylicImage`（这个颜料的图片文件名，留空就是占位图，图片放在 `public/class-supplies/` 下） |
+
+⚠️ 同样注意 Excel 保存要选 **"CSV UTF-8"**，不要选普通 "CSV"，否则中文和特殊符号会存坏。
+
 ## 目录结构
 
 ```
@@ -55,6 +83,16 @@ src/
 ├── content/works/
 │   ├── works.csv               所有作品的信息表
 │   └── <id>.<后缀>              所有原图，都在这一层，文件名 = id
+├── content/commission/
+│   ├── pricing.csv              价格表
+│   ├── steps.csv                委托流程步骤
+│   ├── addons.csv               加价项
+│   └── settings.csv             促销开关、hero 文案等零散设置
+├── content/class/
+│   ├── supplies.csv             画材清单卡片
+│   ├── colors.csv                Michaels 丙烯颜料"必买颜色"列表
+│   ├── faq.csv                   FAQ 手风琴
+│   └── settings.csv              区块标题、丙烯颜料介绍等零散设置
 ├── components/
 │   ├── SiteHeader.astro        顶部导航 + 下拉菜单 + 移动端菜单（全站共用）
 │   ├── WorkCarousel.astro      首页轮播
@@ -66,23 +104,28 @@ src/
 ├── lib/
 │   ├── works.ts                 首页轮播用的数据函数
 │   ├── workBuckets.ts           年份分桶逻辑 + 作品年份页的数据函数
-│   └── studies.ts               Studies 的分类逻辑（从 medium 字段自动生成）+ 数据函数
+│   ├── studies.ts               Studies 的分类逻辑（从 medium 字段自动生成）+ 数据函数
+│   ├── commission.ts            读取 Commission 页面 4 个 CSV 的数据函数
+│   └── classPage.ts             读取 Class 页面 4 个 CSV 的数据函数
 ├── styles/tokens.css           全局设计变量（颜色、间距）
 └── pages/
     ├── index.astro              首页
     ├── about.astro               About 页面
+    ├── commission.astro          Commission 页面
+    ├── class.astro                Class 页面
+    ├── series/furry-forces.astro Furry Forces 系列页
     ├── work/[bucket].astro      作品年份页，如 /work/2025-2024
     └── studies/
         ├── index.astro           /studies，显示所有 study 作品
         └── [medium].astro        /studies/watercolor 等，按类型筛选
 ```
 
-已经做好的页面：首页（`/`）、About（`/about`）、作品年份页（`/work/2026`、`/work/2025-2024` 等 6 个年份区间，2026 单独一档）、Studies（`/studies` 和 `/studies/<类型>`）。
+已经做好的页面：首页（`/`）、About（`/about`）、Commission（`/commission`）、Class（`/class`）、Furry Forces 系列页（`/series/furry-forces`）、作品年份页（`/work/2026`、`/work/2025-2024` 等 6 个年份区间，2026 单独一档）、Studies（`/studies` 和 `/studies/<类型>`）。
 
 年份区间写在 [workBuckets.ts](src/lib/workBuckets.ts) 的 `YEAR_BUCKETS` 里，以后年份不够用了（比如要加 2027），去那改。
 
 **Studies 的分类是自动生成的**：不是像年份那样写死列表，而是看 CSV 里 `kind=study` 的作品用了哪些 `medium` 值（比如 `watercolor`、`digital`），就自动生成对应的页面和导航下拉菜单项。以后加一种新类型，不用改代码，CSV 里出现了就自动有页面。
 
-其它路由（`/series` 等）还没有设计稿，暂时没建 —— 等设计确定了再加对应的 `src/pages/*.astro`。
+`/series` 目前只做了 Furry Forces 这一个。
 
 `docs/design-handoff/` 保留了最初的设计交付文档（`README.md`、`reference/home.html` 视觉基准、原始设计稿），方便以后对照。

@@ -109,4 +109,101 @@ const works = defineCollection({
     }),
 });
 
-export const collections = { works };
+// ---------- Commission page ----------
+// All four are small, hand-editable CSVs — separate from works.csv because
+// none of this is artwork data (no image, medium, dimensions...); it's page
+// copy and a price table, so a shared schema would just be a bunch of
+// columns that don't apply to either kind of row.
+
+const commissionPricing = defineCollection({
+  loader: file('src/content/commission/pricing.csv', { parser: parseCsv }),
+  schema: z.object({
+    animal: z.coerce.number(),
+    portrait: z.coerce.number(),
+  }),
+});
+
+// `step` groups rows under the same numbered badge (e.g. two rows can both
+// be step "2"), so one step can show more than one title/description block.
+const commissionSteps = defineCollection({
+  loader: file('src/content/commission/steps.csv', { parser: parseCsv }),
+  schema: z.object({
+    step: z.coerce.number(),
+    title: z.string(),
+    description: z.string(),
+  }),
+});
+
+const commissionAddons = defineCollection({
+  loader: file('src/content/commission/addons.csv', { parser: parseCsv }),
+  schema: z.object({
+    order: z.coerce.number(),
+    label: z.string(),
+    description: z.string(),
+  }),
+});
+
+// Key/value settings (promo banner on/off + its text, hero copy, deposit
+// copy...) — the CSV's `id` column IS the setting name, so it reads as a
+// plain two-column table in Excel.
+const commissionSettings = defineCollection({
+  loader: file('src/content/commission/settings.csv', { parser: parseCsv }),
+  schema: z.object({
+    value: z.string(),
+  }),
+});
+
+// ---------- Class page ----------
+// Same idea as the commission CSVs: separate small tables, none of it is
+// artwork data. Product photos are optional (`imageExt` blank = no photo
+// yet) and live in public/class-supplies/ as plain static files rather than
+// through astro:assets, since most rows won't have one yet and image()
+// would fail validation on a missing file.
+
+const classSupplies = defineCollection({
+  loader: file('src/content/class/supplies.csv', { parser: parseCsv }),
+  schema: z.object({
+    imageExt: z.preprocess(emptyToUndefined, z.string().optional()),
+    name: z.string(),
+    description: z.preprocess(emptyToUndefined, z.string().optional()),
+    link: z.preprocess(emptyToUndefined, z.string().optional()),
+    order: z.coerce.number(),
+  }),
+});
+
+const classColors = defineCollection({
+  loader: file('src/content/class/colors.csv', { parser: parseCsv }),
+  schema: z.object({
+    name: z.string(),
+    note: z.preprocess(emptyToUndefined, z.string().optional()),
+    order: z.coerce.number(),
+  }),
+});
+
+const classFaq = defineCollection({
+  loader: file('src/content/class/faq.csv', { parser: parseCsv }),
+  schema: z.object({
+    order: z.coerce.number(),
+    question: z.string(),
+    answer: z.string(),
+  }),
+});
+
+const classSettings = defineCollection({
+  loader: file('src/content/class/settings.csv', { parser: parseCsv }),
+  schema: z.object({
+    value: z.string(),
+  }),
+});
+
+export const collections = {
+  works,
+  commissionPricing,
+  commissionSteps,
+  commissionAddons,
+  commissionSettings,
+  classSupplies,
+  classColors,
+  classFaq,
+  classSettings,
+};

@@ -1,0 +1,411 @@
+---
+import '@fontsource/hanken-grotesk/800.css';
+import Layout from '../../layouts/Layout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { Picture, getImage } from 'astro:assets';
+import { getWorksBySeries } from '../../lib/works';
+import { workYearCaptionLine2 } from '../../lib/workBuckets';
+
+const works = await getWorksBySeries('furry force');
+const fighterPilot = works.find((w) => w.id === '2022-furry force- fighter pilot');
+const nightOutSwat = works.find((w) => w.id === '2022-furry force- night out swat');
+const lethalFluff = works.find((w) => w.id === '2024-furry force-leatha lfluff');
+
+// Visual order on the page — also the order the lightbox steps through.
+const ordered = [fighterPilot, nightOutSwat, lethalFluff].filter((w) => w !== undefined);
+const lightboxImages = await Promise.all(
+  ordered.map((w) => getImage({ src: w.data.image, width: 1600, format: 'webp' })),
+);
+---
+
+<Layout title="Einphix — Furry Forces">
+  <SiteHeader current="series" />
+  <main class="ff">
+    <div class="ff-layout">
+      <div class="title-block">
+        <h1>Furry Forces</h1>
+        <p>
+          Explore my "Furry Forces" series, where rabbits take up arms and embody human roles,
+          showcasing the stark realities of war through painting.
+        </p>
+      </div>
+
+      <div class="img-pair">
+        {fighterPilot && (
+          <a class="tile img-a" href="#" data-idx="0">
+            <Picture
+              src={fighterPilot.data.image}
+              alt={fighterPilot.data.title}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpeg"
+              height={700}
+              loading="eager"
+            />
+          </a>
+        )}
+
+        {nightOutSwat && (
+          <a class="tile img-b" href="#" data-idx="1">
+            <Picture
+              src={nightOutSwat.data.image}
+              alt={nightOutSwat.data.title}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpeg"
+              height={700}
+              loading="eager"
+            />
+          </a>
+        )}
+      </div>
+
+      {lethalFluff && (
+        <a class="tile img-c" href="#" data-idx="2">
+          <Picture
+            src={lethalFluff.data.image}
+            alt={lethalFluff.data.title}
+            formats={['avif', 'webp']}
+            fallbackFormat="jpeg"
+            width={1100}
+            loading="eager"
+          />
+        </a>
+      )}
+
+      {lethalFluff && (
+        <div class="caption-block">
+          <p class="year">{lethalFluff.data.year}</p>
+          {lethalFluff.data.description && <p class="note">{lethalFluff.data.description}</p>}
+        </div>
+      )}
+    </div>
+
+    <span class="tile-data" hidden>
+      {ordered.map((w, i) => (
+        <span data-title={w.data.title} data-meta={workYearCaptionLine2(w)} data-full={lightboxImages[i].src} />
+      ))}
+    </span>
+  </main>
+
+  <div class="lightbox" data-open="false" role="dialog" aria-modal="true" aria-label="Artwork" data-lightbox>
+    <figure>
+      <img alt="" data-lb-img />
+      <figcaption>
+        <span class="title" data-lb-title></span>
+        <span class="meta" data-lb-meta></span>
+      </figcaption>
+    </figure>
+    <button class="lb-btn lb-prev" type="button" aria-label="Previous" data-lb-prev>&lsaquo;</button>
+    <button class="lb-btn lb-next" type="button" aria-label="Next" data-lb-next>&rsaquo;</button>
+    <button class="lb-btn lb-close" type="button" aria-label="Close" data-lb-close>&#10005;</button>
+  </div>
+</Layout>
+
+<style>
+  main.ff {
+    flex: 1 1 auto;
+    padding: clamp(40px, 6vw, 90px) var(--pad-x) clamp(70px, 9vw, 130px);
+  }
+
+  .ff-layout {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr 1fr;
+    grid-template-areas:
+      'title imgpair imgpair'
+      'imgC  imgC    capt';
+    align-items: start;
+    gap: clamp(24px, 3.5vw, 48px) clamp(20px, 3vw, 36px);
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  .title-block {
+    grid-area: title;
+  }
+  .title-block h1 {
+    margin: 0;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(34px, 4.6vw, 52px);
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .title-block p {
+    margin: 18px 0 0;
+    max-width: 32ch;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--meta);
+  }
+
+  .tile {
+    display: block;
+    cursor: pointer;
+    background: var(--frame-bg);
+  }
+  .tile :global(picture) {
+    display: block;
+  }
+  .tile :global(img) {
+    display: block;
+    transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tile:hover :global(img) {
+    transform: scale(1.02);
+  }
+
+  /* Fighter Pilot and Night Out SWAT are close but not identical in their
+     own aspect ratio (0.80 vs 0.78) — sharing a fixed height (natural width,
+     no cropping) is what actually makes them read as a matched pair, the
+     same principle the Work rail uses for its row of plates. */
+  .img-pair {
+    grid-area: imgpair;
+    display: flex;
+    gap: clamp(20px, 3vw, 36px);
+    align-items: flex-start;
+  }
+  .img-pair .tile {
+    height: clamp(280px, 34vw, 460px);
+  }
+  .img-pair .tile :global(picture) {
+    height: 100%;
+  }
+  .img-pair .tile :global(img) {
+    width: auto;
+    height: 100%;
+  }
+
+  .img-c {
+    grid-area: imgC;
+  }
+  .img-c :global(img) {
+    width: 100%;
+    height: auto;
+  }
+
+  .caption-block {
+    grid-area: capt;
+    align-self: center;
+  }
+  .caption-block .year {
+    margin: 0;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    font-size: clamp(34px, 4.6vw, 52px);
+    color: var(--ink);
+  }
+  .caption-block .note {
+    margin: 12px 0 0;
+    max-width: 28ch;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--meta);
+  }
+
+  @media (max-width: 860px) {
+    .ff-layout {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        'title'
+        'imgpair'
+        'imgC'
+        'capt';
+    }
+    .img-pair {
+      flex-direction: column;
+    }
+    .img-pair .tile {
+      height: auto;
+      width: 100%;
+    }
+    .img-pair .tile :global(img) {
+      width: 100%;
+      height: auto;
+    }
+    .caption-block {
+      align-self: start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile :global(img) {
+      transition: none;
+    }
+  }
+
+  /* ---------- lightbox (same visual language as the Work rail's) ---------- */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(20px, 4vw, 60px);
+    background: oklch(0.968 0.004 85 / 0.9);
+    animation: ffFadeIn 220ms ease both;
+  }
+  .lightbox[data-open='true'] {
+    display: flex;
+  }
+  .lightbox figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    max-height: 100%;
+  }
+  .lightbox img {
+    max-height: 82vh;
+    max-width: min(1100px, 82vw);
+    width: auto;
+    height: auto;
+    display: block;
+    box-shadow: 0 40px 80px -50px rgba(0, 0, 0, 0.5);
+  }
+  .lightbox figcaption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 5px;
+  }
+  .lightbox .title {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .lightbox .meta {
+    font-size: 12px;
+    color: var(--meta);
+  }
+  .lb-btn {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    color: oklch(0.3 0.006 80);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 200ms;
+  }
+  .lb-btn:hover {
+    opacity: 1;
+  }
+  .lb-prev {
+    top: 50%;
+    left: clamp(12px, 2vw, 34px);
+    transform: translateY(-50%);
+  }
+  .lb-next {
+    top: 50%;
+    right: clamp(12px, 2vw, 34px);
+    transform: translateY(-50%);
+  }
+  .lb-close {
+    top: clamp(14px, 2vw, 28px);
+    right: clamp(14px, 2vw, 30px);
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    opacity: 0.6;
+  }
+
+  @keyframes ffFadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lightbox {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  const lightbox = document.querySelector<HTMLElement>('[data-lightbox]');
+  const tiles = document.querySelectorAll<HTMLElement>('.tile');
+  if (lightbox && tiles.length > 0) {
+    const lbImg = lightbox.querySelector<HTMLImageElement>('[data-lb-img]');
+    const lbTitle = lightbox.querySelector<HTMLElement>('[data-lb-title]');
+    const lbMeta = lightbox.querySelector<HTMLElement>('[data-lb-meta]');
+
+    interface Entry {
+      title: string;
+      meta: string;
+      full: string;
+    }
+    const entries: Entry[] = [...document.querySelectorAll<HTMLElement>('.tile-data > span')].map(
+      (el) => ({
+        title: el.dataset.title ?? '',
+        meta: el.dataset.meta ?? '',
+        full: el.dataset.full ?? '',
+      }),
+    );
+    let at = -1;
+
+    function show(i: number) {
+      if (!lbImg || !lbTitle || !lbMeta || entries.length === 0) return;
+      at = (i + entries.length) % entries.length;
+      const e = entries[at];
+      lbImg.src = e.full;
+      lbImg.alt = e.title;
+      lbTitle.textContent = e.title;
+      lbMeta.textContent = e.meta;
+      lightbox!.dataset.open = 'true';
+    }
+    function close() {
+      lightbox!.dataset.open = 'false';
+      at = -1;
+    }
+
+    tiles.forEach((tile) => {
+      tile.addEventListener('click', (e) => {
+        e.preventDefault();
+        const idx = Number(tile.dataset.idx);
+        if (!Number.isNaN(idx)) show(idx);
+      });
+    });
+
+    lightbox.querySelector('[data-lb-prev]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      show(at - 1);
+    });
+    lightbox.querySelector('[data-lb-next]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      show(at + 1);
+    });
+    lightbox.querySelector('[data-lb-close]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      close();
+    });
+
+    lightbox.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('figure') || target.closest('button')) return;
+      const r = lightbox!.querySelector('figure')!.getBoundingClientRect();
+      show((e as MouseEvent).clientX < r.left + r.width / 2 ? at - 1 : at + 1);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (lightbox!.dataset.open !== 'true') return;
+      if (e.key === 'Escape') close();
+      else if (e.key === 'ArrowRight') show(at + 1);
+      else if (e.key === 'ArrowLeft') show(at - 1);
+    });
+  }
+</script>

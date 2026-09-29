@@ -33,3 +33,11 @@ export function captionLine2(work: Work): string {
   const { year, medium, dimensions } = work.data;
   return `${year}, ${medium}, ${formatDimensions(dimensions)}`;
 }
+
+export async function getWorksBySeries(seriesName: string): Promise<Work[]> {
+  const works = await getCollection(
+    'works',
+    ({ data }) => data.series?.toLowerCase() === seriesName.toLowerCase(),
+  );
+  return works.sort(compareWorks);
+}

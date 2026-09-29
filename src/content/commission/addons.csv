@@ -1,0 +1,4 @@
+id,order,label,description
+extra-subject,1,Additional pet or person,"+60% of the base price per extra subject (e.g. 2 subjects = base price × 1.6, 3 subjects = base price × 2.2)."
+custom-design,2,Custom design or fantasy elements,A custom design fee will be quoted based on complexity.
+rush,3,Rush order,"Standard timeline is 3–6 weeks. Rush orders add 10–30% of the base price, depending on your preferred timeline."

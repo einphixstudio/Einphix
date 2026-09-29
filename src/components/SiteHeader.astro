@@ -3,7 +3,7 @@ import { getStudyMedia } from '../lib/studies';
 import { YEAR_BUCKETS } from '../lib/workBuckets';
 
 interface Props {
-  current?: 'work' | 'about' | 'studies';
+  current?: 'work' | 'about' | 'studies' | 'series' | 'commission' | 'class';
 }
 
 const { current = 'work' } = Astro.props;
@@ -41,7 +41,7 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
       </div>
     </div>
     <div class="has-menu">
-      <a class="nav-link" href={seriesItems[0].href}>Series</a>
+      <a class="nav-link" href={seriesItems[0].href} aria-current={current === 'series' ? 'page' : undefined}>Series</a>
       <div class="menu">
         {seriesItems.map((s) => (
           <a class={s.cls} href={s.href}>{s.label}</a>
@@ -59,8 +59,8 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
       )}
     </div>
     <a class="nav-link" href="/about" aria-current={current === 'about' ? 'page' : undefined}>About</a>
-    <a class="nav-link" href="/commission">Commission</a>
-    <a class="nav-link" href="/class">Class</a>
+    <a class="nav-link" href="/commission" aria-current={current === 'commission' ? 'page' : undefined}>Commission</a>
+    <a class="nav-link" href="/class" aria-current={current === 'class' ? 'page' : undefined}>Class</a>
     <span class="socials">
       {socials.map((s) => (
         <a class="social-chip" href={s.href} title={s.title} target="_blank" rel="noopener noreferrer">
@@ -102,8 +102,8 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
     <a class="mobile-row" href="/studies">Studies</a>
   )}
   <a class="mobile-row" href="/about" aria-current={current === 'about' ? 'page' : undefined}>About</a>
-  <a class="mobile-row" href="/commission">Commission</a>
-  <a class="mobile-row" href="/class">Class</a>
+  <a class="mobile-row" href="/commission" aria-current={current === 'commission' ? 'page' : undefined}>Commission</a>
+  <a class="mobile-row" href="/class" aria-current={current === 'class' ? 'page' : undefined}>Class</a>
   <span class="socials">
     {socials.map((s) => (
       <a class="social-chip" href={s.href} title={s.title} target="_blank" rel="noopener noreferrer">

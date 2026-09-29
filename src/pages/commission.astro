@@ -1,0 +1,314 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { Picture } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import { getSetting, isPromoActive, getPricingRows, getSteps, getAddons } from '../lib/commission';
+
+const [heroHeading, heroSubtext, heroImageId, showPromo, promoText, pricingIntro, depositText] =
+  await Promise.all([
+    getSetting('heroHeading'),
+    getSetting('heroSubtext'),
+    getSetting('heroImageId'),
+    isPromoActive(),
+    getSetting('promoText'),
+    getSetting('pricingIntro'),
+    getSetting('depositText'),
+  ]);
+const [pricing, steps, addons] = await Promise.all([getPricingRows(), getSteps(), getAddons()]);
+const heroWork = heroImageId ? await getEntry('works', heroImageId) : undefined;
+
+const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
+---
+
+<Layout title="Einphix — Commission">
+  <SiteHeader current="commission" />
+  <main class="cm">
+    <section class="hero">
+      <div class="copy">
+        {heroHeading && <h1>{heroHeading}</h1>}
+        {heroSubtext && <p>{heroSubtext}</p>}
+      </div>
+      {heroWork && (
+        <div class="portrait">
+          <Picture
+            src={heroWork.data.image}
+            alt={heroWork.data.title}
+            formats={['avif', 'webp']}
+            fallbackFormat="jpeg"
+            width={700}
+            loading="eager"
+          />
+        </div>
+      )}
+    </section>
+
+    <section class="pricing">
+      <h2>Pricing</h2>
+      {pricingIntro && <p class="intro">{pricingIntro}</p>}
+
+      {showPromo && promoText && <p class="promo">{promoText}</p>}
+
+      {pricing.length > 0 && (
+        <table>
+          <thead>
+            <tr>
+              <th>Size (inches)</th>
+              <th>Animal (CAD)</th>
+              <th>Portrait (CAD)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pricing.map((row) => (
+              <tr>
+                <td>{row.size}</td>
+                <td>{currency(row.animal)}</td>
+                <td>{currency(row.portrait)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {addons.length > 0 && (
+        <div class="addons">
+          <h3>Add-ons</h3>
+          <ul>
+            {addons.map((a) => (
+              <li>
+                <strong>{a.label}:</strong> {a.description}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {depositText && <p class="deposit">{depositText}</p>}
+    </section>
+
+    <section class="steps">
+      <h2>How It Works</h2>
+      <div class="steps-grid">
+        {steps.map((s) => (
+          <div class="step">
+            <span class="badge">{s.step}</span>
+            {s.blocks.map((b) => (
+              <div class="block">
+                <h3>{b.title}</h3>
+                <p>{b.description}</p>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  main.cm {
+    flex: 1 1 auto;
+  }
+  main.cm > section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(50px, 7vw, 90px) var(--pad-x);
+  }
+  main.cm > section + section {
+    border-top: 1px solid var(--rule);
+  }
+
+  /* ---------- hero ---------- */
+  .hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: clamp(32px, 5vw, 64px);
+  }
+  .hero .copy {
+    flex: 1 1 320px;
+  }
+  .hero h1 {
+    margin: 0;
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .hero .copy p {
+    margin: 16px 0 0;
+    max-width: 34ch;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--meta);
+  }
+  .hero .portrait {
+    flex: 0 0 auto;
+    width: clamp(220px, 30vw, 340px);
+    aspect-ratio: 4 / 5;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--frame-bg);
+  }
+  .hero .portrait :global(picture) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .hero .portrait :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ---------- pricing ---------- */
+  .pricing h2,
+  .steps h2 {
+    margin: 0 0 20px;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .pricing .intro {
+    margin: 0 0 24px;
+    max-width: 60ch;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--meta);
+  }
+  .promo {
+    margin: 0 0 28px;
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: oklch(0.94 0.03 80);
+    border-left: 2px solid var(--ink);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th {
+    padding: 10px 12px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--meta);
+    border-bottom: 1px solid var(--rule);
+  }
+  td {
+    padding: 12px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule);
+  }
+  th:not(:first-child),
+  td:not(:first-child) {
+    text-align: right;
+  }
+
+  .addons {
+    margin-top: 40px;
+  }
+  .addons h3 {
+    margin: 0 0 14px;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .addons ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .addons li {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--meta);
+  }
+  .addons li strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .deposit {
+    margin: 32px 0 0;
+    padding: 16px 18px;
+    max-width: 60ch;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--meta);
+    background: var(--frame-bg);
+  }
+
+  /* ---------- steps ---------- */
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(28px, 4vw, 48px);
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-left: clamp(20px, 3vw, 32px);
+    border-left: 1px solid var(--rule);
+  }
+  .step:first-child {
+    padding-left: 0;
+    border-left: none;
+  }
+  .badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 12px;
+  }
+  .block h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .block p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--meta);
+    white-space: pre-line;
+  }
+
+  @media (max-width: 860px) {
+    .steps-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .step {
+      padding-left: 0;
+      padding-top: 24px;
+      border-left: none;
+      border-top: 1px solid var(--rule);
+    }
+    .step:first-child {
+      padding-top: 0;
+      border-top: none;
+    }
+  }
+</style>
