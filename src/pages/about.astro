@@ -1,0 +1,117 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { Picture } from 'astro:assets';
+import { getCollection } from 'astro:content';
+
+const works = await getCollection('works');
+const portrait = works.find((w) => w.id === '2017-crowned bunny girl');
+---
+
+<Layout title="Einphix — About">
+  <SiteHeader current="about" />
+  <main>
+    <div class="about">
+      {portrait && (
+        <div class="portrait">
+          <Picture
+            src={portrait.data.image}
+            alt={portrait.data.title}
+            formats={['avif', 'webp']}
+            fallbackFormat="jpeg"
+            width={700}
+            loading="eager"
+          />
+        </div>
+      )}
+      <div class="copy">
+        <h1>About Me</h1>
+        <p>
+          Hello, I go by the pseudonym Einphix, and I’ve been wielding brushes and pencils since as
+          far back as I can remember. I started taking art lessons at 11. By the time I reached
+          college age, I was accepted into an art school, but ended up studying in the United States
+          instead, and didn’t continue pursuing painting. After graduation, I became a product
+          designer. However, over time, I realized that I still loved painting the most. A few years
+          after moving to the United States, I picked up the brush again, painting sporadically. So, I
+          consider myself a self-taught artist.
+        </p>
+        <p>
+          My paintings don’t have a fixed style or theme; I enjoy experimenting with new techniques
+          and exploring different styles. I still haven’t found a style or direction that I completely
+          love. However, I’ve always had peculiar dreams since childhood—dreams of being underwater,
+          going to outer space, experiencing the end of the world, and navigating underground mazes.
+          In those dreams, I always had a unique feeling—not happy, not sad, but a sensation that only
+          exists in the dream world, captivating me. Only once, while cliff diving in Mexico, did I
+          momentarily blur the lines between reality and dream. Since then, I’ve been striving to
+          capture the feeling of those dreams in my artwork.
+        </p>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    padding: clamp(40px, 6vw, 90px) var(--pad-x) clamp(60px, 8vw, 120px);
+  }
+  .about {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: clamp(32px, 5vw, 64px);
+    width: 100%;
+    max-width: 1200px;
+  }
+  .portrait {
+    flex: 0 0 auto;
+    width: clamp(220px, 32vw, 380px);
+    aspect-ratio: 4 / 5;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--frame-bg);
+  }
+  .portrait :global(picture) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .portrait :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .copy {
+    flex: 1 1 360px;
+    min-width: 280px;
+  }
+  h1 {
+    margin: 0 0 clamp(20px, 3vw, 32px);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    color: var(--ink);
+  }
+  p {
+    margin: 0 0 20px;
+    max-width: 640px;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--meta);
+  }
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 700px) {
+    .about {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .portrait {
+      width: min(280px, 70vw);
+    }
+  }
+</style>

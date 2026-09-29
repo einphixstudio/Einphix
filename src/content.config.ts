@@ -63,21 +63,43 @@ function parseCsv(text: string): Record<string, string>[] {
 }
 
 const emptyToUndefined = (v: unknown) => (v === '' || v == null ? undefined : v);
+// Excel/Numbers/Sheets all export boolean-looking cells as "TRUE"/"FALSE" (not
+// lowercase), so match case-insensitively rather than requiring one spelling.
+const isTrue = (v: unknown) => typeof v === 'string' && v.toLowerCase() === 'true';
+// Accept "study"/"studies"/"work"/"works" in any case — whichever reads
+// naturally when typing — rather than requiring one exact spelling.
+const normalizeKind = (v: unknown) => {
+  const s = emptyToUndefined(v);
+  if (typeof s !== 'string') return 'work';
+  return /^stud/i.test(s.trim()) ? 'study' : 'work';
+};
+
+// The CSV only carries an `imageExt` (jpg/png/...) — the actual filename is
+// always `<id>.<ext>` (all images live flat in src/content/works/, with the
+// id conventionally starting with the year, e.g. "2025-the-fish-thief"), so
+// the artist never has to type the filename twice.
+function withImagePath(rows: Record<string, string>[]): Record<string, string>[] {
+  return rows.map((row) => ({
+    ...row,
+    image: `${row.id}.${row.imageExt}`,
+  }));
+}
 
 const works = defineCollection({
-  loader: file('src/content/works/works.csv', { parser: parseCsv }),
+  loader: file('src/content/works/works.csv', {
+    parser: (text) => withImagePath(parseCsv(text)),
+  }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
       year: z.coerce.number(),
       medium: z.string(),
-      dimensionsImperial: z.string(),
-      dimensionsMetric: z.string(),
-      aspect: z.string(),
+      dimensions: z.string(),
       image: image(),
+      description: z.preprocess(emptyToUndefined, z.string().optional()),
       series: z.preprocess(emptyToUndefined, z.string().optional()),
-      kind: z.preprocess((v) => emptyToUndefined(v) ?? 'work', z.enum(['work', 'sketch'])),
-      featured: z.preprocess((v) => v === 'true', z.boolean()),
+      kind: z.preprocess(normalizeKind, z.enum(['work', 'study'])),
+      featured: z.preprocess(isTrue, z.boolean()),
       order: z.preprocess(emptyToUndefined, z.coerce.number().optional()),
     }),
 });

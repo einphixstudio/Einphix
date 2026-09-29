@@ -1,4 +1,15 @@
-id,title,year,medium,dimensionsImperial,dimensionsMetric,aspect,image,series,kind,featured,order
-untitled-three,Untitled (Three),2024,oil on canvas,35 x 24 in,90 x 60 cm,3 / 2,2024/IMG_63510.jpg,,work,true,1
-untitled-wires,Untitled (Wires),2024,oil on canvas,20 x 20 in,51 x 51 cm,1 / 1,2024/A4-8x8-cloude-F.png,,work,true,2
-untitled-adelie,Untitled (Adélie),2024,oil on canvas,16 x 12 in,40 x 30 cm,4 / 3,2024/A-blured.png,,work,true,3
+id,imageExt,title,year,medium,dimensions,series,kind,featured,order,description
+2024-untitled-three,jpg,Untitled (Three),2024,oil on canvas,35 x 24 in,,work,TRUE,1,
+2024-untitled-wires,png,Untitled (Wires),2024,oil on canvas,20 x 20 in,,work,TRUE,2,
+2024-untitled-adelie,png,Untitled (Adélie),2024,oil on canvas,16 x 12 in,,work,TRUE,3,
+2022-wires over a sunset cloud,jpg,Wires Over a Sunset Cloud,2022,oil on canvas,14x14,,work,TRUE,4,"Based on a photograph, this painting elevates a commonplace urban view into a moment of quiet beauty. A soft cloud, illuminated by the warm light of sunset, provides a natural counterpoint to the man-made structures."
+2020- winter bear statue,jpg,Winter Bear Statue,2020,oil on canvas,8x10,,work,,,"I discovered the subject for this painting during a winter walk in my neighborhood. I saw this charming bear statue, about 80cm tall, holding a small lantern. I found it so endearing and whimsical. This piece is my effort to capture that simple, unexpected moment of delight on a cold day."
+2017-where sight takes flight,jpg,Where Sight Takes Flight,2017,oil on canvas,11x14,,work,,,"Here, physical sight takes flight on delicate wings, trading the world seen for the world felt. Her eyes are veiled, not in darkness, but in a fragile, living curtain."
+2020-where light lingers,jpg,Where Light Lingers,2020,oil on canvas,11x14,,work,,,"Based on a photograph, this painting depicts a girl in a school uniform during the golden hour. Viewed from behind, her figure is set against a vast sky, capturing a quiet and nostalgic mood."
+2020-yellow fruit study,jpg,Yellow Fruit Study,2020,watercolor,9x12,,studies,,,"A watercolor still life fruit study on 9x12 inch cotton paper, created as a practice piece through reference painting."
+2022-vietnamese girl in field,jpg,Vietnamese Girl in Field,2022,Oil on board,12x14,,work,,,"An oil painting of a Vietnamese girl in a blue coat and traditional hat, inspired by a photograph, standing in a lush field of wildflowers."
+2025-the fish thief,jpg,The Fish Thief,2025,oil on canvas,12x16,,work,,,"In this piece, I wanted to translate a fleeting, amusing scene into a lasting narrative on canvas. The cool, atmospheric tones of the fishing port serve as a backdrop to the sharp contrast and determination of the 'fish thief,' highlighting my interest in blending realistic animal portraiture with dynamic storytelling."
+2023-trees by sunset,jpg,Trees by Sunset,2023,oil on canvas,11x14,,work,,,"Glowing marsh sunset sets silhouetted trees against a sky of tangerine and rose, with the sinking sun mirrored in calm water for a quiet, reflective mood."
+2020-tiger portrait i,jpg,Tiger Portrait I,2020,watercolor,7.5x9.5,,work,,,"A practice study portraying a tiger in rich, warm tones. Fine brushwork captures the texture of its fur and the intensity of its gaze, while the dark, blurred background draws focus to the animal's expressive face."
+2017-crowned bunny girl,jpg,Crowned Bunny Girl,2017,oil on canvas,11x14,,work,,,"An oil painting topped with a crowned lop-ear bunny I once raised, created in 2017 when I began exploring oil painting. Before this, my color work primarily focused on watercolor, adding a unique blend of techniques to this whimsical piece."
+2022-the traveler and the tinch,jpg,The Traveler and the Finch,2022,Oil on board,11x15,,work,,,"This portrait, based on a photograph, is a study of skin tones in cool shadow."

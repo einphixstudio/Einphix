@@ -1,12 +1,16 @@
 ---
+import { getStudyMedia } from '../lib/studies';
+
+interface Props {
+  current?: 'work' | 'about' | 'studies';
+}
+
+const { current = 'work' } = Astro.props;
+
+const studyMedia = await getStudyMedia();
+
 const socials = [
   { href: 'https://www.instagram.com/einphix/', title: 'Instagram', icon: '/icons/instagram.svg' },
-  { href: 'https://www.youtube.com/@einphix', title: 'YouTube', icon: '/icons/youtube.svg' },
-  {
-    href: 'https://space.bilibili.com/97339116?spm_id_from=333.788.0.0',
-    title: 'bilibili',
-    icon: '/icons/bilibili.svg',
-  },
 ];
 
 const rednoteHref =
@@ -28,7 +32,7 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
 
   <nav class="nav">
     <div class="has-menu">
-      <a class="nav-link" href="/work" aria-current="page">Work</a>
+      <a class="nav-link" href={workYears[0].href} aria-current={current === 'work' ? 'page' : undefined}>Work</a>
       <div class="menu">
         {workYears.map((y) => (
           <a class={y.cls} href={y.href}>{y.label}</a>
@@ -36,15 +40,24 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
       </div>
     </div>
     <div class="has-menu">
-      <a class="nav-link" href="/series">Series</a>
+      <a class="nav-link" href={seriesItems[0].href}>Series</a>
       <div class="menu">
         {seriesItems.map((s) => (
           <a class={s.cls} href={s.href}>{s.label}</a>
         ))}
       </div>
     </div>
-    <a class="nav-link" href="/sketches">Sketches</a>
-    <a class="nav-link" href="/about">About</a>
+    <div class="has-menu">
+      <a class="nav-link" href="/studies" aria-current={current === 'studies' ? 'page' : undefined}>Studies</a>
+      {studyMedia.length > 0 && (
+        <div class="menu">
+          {studyMedia.map((m) => (
+            <a href={`/studies/${m.slug}`}>{m.label}</a>
+          ))}
+        </div>
+      )}
+    </div>
+    <a class="nav-link" href="/about" aria-current={current === 'about' ? 'page' : undefined}>About</a>
     <a class="nav-link" href="/commission">Commission</a>
     <a class="nav-link" href="/class">Class</a>
     <span class="socials">
@@ -75,8 +88,19 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
       <a class={s.cls} href={s.href}>{s.label}</a>
     ))}
   </div>
-  <a class="mobile-row" href="/sketches">Sketches</a>
-  <a class="mobile-row" href="/about">About</a>
+  {studyMedia.length > 0 ? (
+    <>
+      <button class="mobile-row" type="button" data-section="studies">Studies <span class="plus">+</span></button>
+      <div class="mobile-sub" data-sub="studies" data-open="false">
+        {studyMedia.map((m) => (
+          <a href={`/studies/${m.slug}`}>{m.label}</a>
+        ))}
+      </div>
+    </>
+  ) : (
+    <a class="mobile-row" href="/studies">Studies</a>
+  )}
+  <a class="mobile-row" href="/about" aria-current={current === 'about' ? 'page' : undefined}>About</a>
   <a class="mobile-row" href="/commission">Commission</a>
   <a class="mobile-row" href="/class">Class</a>
   <span class="socials">

@@ -1,0 +1,26 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import MediaSwitcher from '../../components/MediaSwitcher.astro';
+import StudyGrid from '../../components/StudyGrid.astro';
+import { getStudies, getStudyMedia } from '../../lib/studies';
+
+const [studies, media] = await Promise.all([getStudies(), getStudyMedia()]);
+---
+
+<Layout title="Einphix — Studies">
+  <SiteHeader current="studies" />
+  <main>
+    <MediaSwitcher media={media} />
+    <StudyGrid studies={studies} />
+  </main>
+</Layout>
+
+<style>
+  main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    padding-top: clamp(20px, 3vw, 40px);
+  }
+</style>

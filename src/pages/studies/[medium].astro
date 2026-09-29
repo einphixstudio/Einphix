@@ -1,0 +1,37 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import MediaSwitcher from '../../components/MediaSwitcher.astro';
+import StudyGrid from '../../components/StudyGrid.astro';
+import { getStudyMedia, getStudiesByMediumSlug } from '../../lib/studies';
+
+export async function getStaticPaths() {
+  const media = await getStudyMedia();
+  return Promise.all(
+    media.map(async (medium) => ({
+      params: { medium: medium.slug },
+      props: { medium, studies: await getStudiesByMediumSlug(medium.slug) },
+    })),
+  );
+}
+
+const { medium, studies } = Astro.props;
+const media = await getStudyMedia();
+---
+
+<Layout title={`Einphix — Studies / ${medium.label}`}>
+  <SiteHeader current="studies" />
+  <main>
+    <MediaSwitcher media={media} currentSlug={medium.slug} />
+    <StudyGrid studies={studies} />
+  </main>
+</Layout>
+
+<style>
+  main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    padding-top: clamp(20px, 3vw, 40px);
+  }
+</style>
