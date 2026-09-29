@@ -1,5 +1,6 @@
 ---
 import { getStudyMedia } from '../lib/studies';
+import { YEAR_BUCKETS } from '../lib/workBuckets';
 
 interface Props {
   current?: 'work' | 'about' | 'studies';
@@ -16,13 +17,13 @@ const socials = [
 const rednoteHref =
   'https://www.rednote.com/user/profile/6002372b000000000100a384?xsec_token=ABl914SVjtnUvxyM-hBEdSbPHUQxNwg8oVVdY7dwzZzHE%3D&xsec_source=pc_user';
 
-const workYears = [
-  { cls: 'y1', label: '2025 – 2024', href: '/work/2025-2024' },
-  { cls: 'y2', label: '2023 – 2022', href: '/work/2023-2022' },
-  { cls: 'y3', label: '2021 – 2020', href: '/work/2021-2020' },
-  { cls: 'y4', label: '2019 – 2018', href: '/work/2019-2018' },
-  { cls: 'y5', label: 'Before 2017', href: '/work/before-2017' },
-];
+// Derived from the same YEAR_BUCKETS the /work/[bucket] pages use, so this
+// dropdown can never drift out of sync with the actual routes again.
+const workYears = YEAR_BUCKETS.map((bucket, i) => ({
+  cls: `y${i}`,
+  label: bucket.label,
+  href: `/work/${bucket.slug}`,
+}));
 
 const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-forces' }];
 ---
@@ -204,6 +205,9 @@ const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-fo
   }
   .menu a:hover {
     color: var(--ink);
+  }
+  .y0 {
+    color: var(--year-0);
   }
   .y1 {
     color: var(--year-1);

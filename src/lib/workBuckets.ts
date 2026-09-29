@@ -1,5 +1,5 @@
 import { getCollection } from 'astro:content';
-import { formatDimensions, type Work } from './works';
+import { compareWorks, formatDimensions, type Work } from './works';
 
 export interface YearBucket {
   slug: string;
@@ -9,6 +9,7 @@ export interface YearBucket {
 
 // Order matters: newest bucket first, matching the nav/dropdown order everywhere else.
 export const YEAR_BUCKETS: YearBucket[] = [
+  { slug: '2026', label: '2026', test: (y) => y === 2026 },
   { slug: '2025-2024', label: '2025 – 2024', test: (y) => y === 2024 || y === 2025 },
   { slug: '2023-2022', label: '2023 – 2022', test: (y) => y === 2022 || y === 2023 },
   { slug: '2021-2020', label: '2021 – 2020', test: (y) => y === 2020 || y === 2021 },
@@ -25,10 +26,7 @@ export async function getWorksForBucket(bucket: YearBucket): Promise<Work[]> {
     'works',
     ({ data }) => data.kind === 'work' && bucket.test(data.year),
   );
-  return works.sort((a, b) => {
-    if (b.data.year !== a.data.year) return b.data.year - a.data.year;
-    return (a.data.order ?? 0) - (b.data.order ?? 0);
-  });
+  return works.sort(compareWorks);
 }
 
 export function workYearCaptionLine2(work: Work): string {

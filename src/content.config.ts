@@ -100,6 +100,11 @@ const works = defineCollection({
       series: z.preprocess(emptyToUndefined, z.string().optional()),
       kind: z.preprocess(normalizeKind, z.enum(['work', 'study'])),
       featured: z.preprocess(isTrue, z.boolean()),
+      // featuredOrder: home carousel sequence (only meaningful when featured).
+      // order: manual "pin to the front" for the Work year / Studies pages.
+      // Two fields because a piece's place in the home carousel and its place
+      // in its own year/medium page are independent decisions.
+      featuredOrder: z.preprocess(emptyToUndefined, z.coerce.number().optional()),
       order: z.preprocess(emptyToUndefined, z.coerce.number().optional()),
     }),
 });

@@ -35,7 +35,8 @@ npm run preview  # 本地预览构建结果
    | `series` | 所属系列，没有就留空 | `furry-forces` |
    | `kind` | `work`（按年份放进 Work 页面）或 `study`（探索性作品，比如 CG、水粉、跟主风格不搭的尝试——放进 Studies 分类），留空默认 `work`。`study`/`studies`、大小写都认 | |
    | `featured` | 是否出现在首页轮播，`TRUE`/`FALSE` | `TRUE` |
-   | `order` | 排序用，数字越小越靠前（首页轮播、作品年份页都按这个排），留空也行 | `1` |
+   | `featuredOrder` | **只管首页轮播**的顺序，数字越小越靠前。只有 `featured=TRUE` 才有意义 | `1` |
+   | `order` | **只管这张画在自己的 Work 年份页 / Studies 页面里排第几**，数字越小越靠前，跟首页轮播完全无关。填了就"置顶"到该年份/该类型页面最前面（在其它同样填了 `order` 的画之间按数字排）；不填就按年份新到旧自然排在后面 | `1` |
    | `description` | 这张画的介绍文字，没有就留空（暂时还没有页面会显示它，先存着） | |
 
    直接用 Excel / Numbers / Google Sheets 打开 `works.csv` 编辑，保存时**保持 CSV 格式**（不要存成 `.xlsx`）。
@@ -76,7 +77,9 @@ src/
         └── [medium].astro        /studies/watercolor 等，按类型筛选
 ```
 
-已经做好的页面：首页（`/`）、About（`/about`）、作品年份页（`/work/2025-2024` 等 5 个年份区间）、Studies（`/studies` 和 `/studies/<类型>`）。
+已经做好的页面：首页（`/`）、About（`/about`）、作品年份页（`/work/2026`、`/work/2025-2024` 等 6 个年份区间，2026 单独一档）、Studies（`/studies` 和 `/studies/<类型>`）。
+
+年份区间写在 [workBuckets.ts](src/lib/workBuckets.ts) 的 `YEAR_BUCKETS` 里，以后年份不够用了（比如要加 2027），去那改。
 
 **Studies 的分类是自动生成的**：不是像年份那样写死列表，而是看 CSV 里 `kind=study` 的作品用了哪些 `medium` 值（比如 `watercolor`、`digital`），就自动生成对应的页面和导航下拉菜单项。以后加一种新类型，不用改代码，CSV 里出现了就自动有页面。
 

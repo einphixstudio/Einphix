@@ -1,5 +1,5 @@
 import { getCollection } from 'astro:content';
-import { formatDimensions, type Work } from './works';
+import { compareWorks, formatDimensions, type Work } from './works';
 
 export interface StudyMedium {
   slug: string;
@@ -19,10 +19,7 @@ function slugify(value: string): string {
 
 export async function getStudies(): Promise<Work[]> {
   const studies = await getCollection('works', ({ data }) => data.kind === 'study');
-  return studies.sort((a, b) => {
-    if (b.data.year !== a.data.year) return b.data.year - a.data.year;
-    return (a.data.order ?? 0) - (b.data.order ?? 0);
-  });
+  return studies.sort(compareWorks);
 }
 
 export async function getStudyMedia(): Promise<StudyMedium[]> {
