@@ -122,7 +122,12 @@ const works = defineCollection({
     z.object({
       title: z.string(),
       year: z.coerce.number(),
+      // medium = what paint/material was used (oil, acrylic, watercolor...).
+      // surface = what it was applied to (canvas, board, paper...) — split
+      // out so a display caption can join them ("Oil on canvas"). surface
+      // is optional since some media (e.g. digital) have no physical one.
       medium: z.string(),
+      surface: z.preprocess(emptyToUndefined, z.string().optional()),
       dimensions: z.string(),
       image: image().optional(),
       description: z.preprocess(emptyToUndefined, z.string().optional()),

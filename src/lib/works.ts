@@ -39,9 +39,18 @@ export function formatDimensions(raw: string): string {
   return `${w} x ${h} in`;
 }
 
+// "Oil on canvas" — except a sketchbook is something you paint *in*, not
+// *on*, so that one surface gets its own preposition. surface is optional
+// (e.g. digital work has none), in which case it's just the medium alone.
+export function formatMediumSurface(medium: string, surface?: string): string {
+  if (!surface) return medium;
+  const preposition = surface.trim().toLowerCase() === 'sketchbook' ? 'in' : 'on';
+  return `${medium} ${preposition} ${surface}`;
+}
+
 export function captionLine2(work: Work): string {
-  const { year, medium, dimensions } = work.data;
-  return `${year}, ${medium}, ${formatDimensions(dimensions)}`;
+  const { year, medium, surface, dimensions } = work.data;
+  return `${year}, ${formatMediumSurface(medium, surface)}, ${formatDimensions(dimensions)}`;
 }
 
 export async function getWorksBySeries(seriesName: string): Promise<Work[]> {

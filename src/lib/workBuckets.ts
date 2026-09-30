@@ -1,5 +1,5 @@
 import { getCollection } from 'astro:content';
-import { compareWorks, formatDimensions, type Work } from './works';
+import { compareWorks, formatDimensions, formatMediumSurface, type Work } from './works';
 
 export interface YearBucket {
   slug: string;
@@ -30,7 +30,8 @@ export async function getWorksForBucket(bucket: YearBucket): Promise<Work[]> {
 }
 
 export function workYearCaptionLine2(work: Work): string {
-  const { medium, dimensions, year } = work.data;
-  const capitalizedMedium = medium.charAt(0).toUpperCase() + medium.slice(1);
-  return `${capitalizedMedium}, ${formatDimensions(dimensions)}, ${year}.`;
+  const { medium, surface, dimensions, year } = work.data;
+  const phrase = formatMediumSurface(medium, surface);
+  const capitalized = phrase.charAt(0).toUpperCase() + phrase.slice(1);
+  return `${capitalized}, ${formatDimensions(dimensions)}, ${year}.`;
 }

@@ -30,7 +30,8 @@ npm run preview  # 本地预览构建结果
    | `imageExt` | 图片文件后缀，跟 1 步里存的文件后缀对应上就行 | `jpg` / `png` |
    | `title` | 作品标题 | `The Fish Thief` |
    | `year` | 年份 | `2025` |
-   | `medium` | 材质 | `oil on canvas` |
+   | `medium` | 用什么颜料画的 | `oil` / `acrylic` / `watercolor` |
+   | `surface` | 画在什么上面，没有就留空（比如数字绘画） | `canvas` / `board` / `paper` / `gessoed paper` / `sketchbook` |
    | `dimensions` | 尺寸，**只写数字**，不用写 "in"，网站会自动补上——`14x14`、`14 x 14`、`7.5x9.5` 怎么写都行 | `14x14` |
    | `series` | 所属系列，没有就留空。填了之后自动会有一个 `/series/<系列名>` 页面（用跟 Work 年份页一样的横向卷轴 + 灯箱），导航栏 Series 下拉也会自动多一项，不用改代码——除非这个系列需要特殊设计（像 Furry Forces 那样），那种要专门跟我说 | `dreamscape` |
    | `kind` | `work`（按年份放进 Work 页面）、`study`（探索性作品，比如 CG、水粉、跟主风格不搭的尝试——放进 Studies 分类）或 `commission`（委托作品，不会出现在 Work 或 Studies 任何页面——比如 Commission 页面头图这种，只是单独被某个页面点名引用的画，不需要出现在作品列表里），留空默认 `work`。大小写、单复数都认（`study`/`studies`、`commission`/`commissions`） | |
@@ -40,6 +41,8 @@ npm run preview  # 本地预览构建结果
    | `order` | **只管这张画在自己主分类（`kind`）对应页面里排第几**，数字越小越靠前，跟首页轮播完全无关。填了就"置顶"到该年份/该类型页面最前面（在其它同样填了 `order` 的画之间按数字排）；不填就按年份新到旧自然排在后面 | `1` |
    | `kind2Order` | 跟 `order`同样的排序规则，但**只管第二个分类（`kind2`）对应页面里排第几**——跟 `order` 互相独立，只有填了 `kind2` 才有意义 | `1` |
    | `description` | 这张画的介绍文字，没有就留空（暂时还没有页面会显示它，先存着） | |
+
+   **`medium` + `surface` 怎么显示**：网站会自动拼成"Oil on canvas"这样的一句话。大部分 surface 用"on"连接，但 `surface=sketchbook` 时自动换成"in"（"Oil in sketchbook"），因为素描本习惯说"画在本子里"而不是"画在本子上"。`surface` 留空就只显示 `medium`（比如以后加数字绘画，`medium=digital`，没有物理材质可以不填）。
 
    直接用 Excel / Numbers / Google Sheets 打开 `works.csv` 编辑，保存时**保持 CSV 格式**（不要存成 `.xlsx`）。
 
