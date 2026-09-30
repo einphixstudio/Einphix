@@ -68,10 +68,12 @@ CSV 里没写的字段（比如某天想加个 `alt` 文字描述）需要改 `s
 
 | 文件 | 内容 | 字段说明 |
 | --- | --- | --- |
-| `supplies.csv` | 上面画材清单的卡片（Canson 纸、颜料、笔刷等） | `order`=显示顺序（数字），`name`=名称，`description`=说明（想换行就 Alt+Enter），`link`=Amazon 购买链接（留空就不显示购买按钮），`imageExt`=图片后缀（比如 `jpg`；留空就显示"Photo coming soon"占位，图片要放在 `public/class-supplies/<id>.<后缀>`，文件名 = 这一行的 `id`） |
+| `supplies.csv` | 画材清单的卡片（Canson 纸、颜料、笔刷等），也包括那个高亮的 Michaels 丙烯颜料块 | `order`=显示顺序（数字），`name`=名称，`description`=说明（想换行就 Alt+Enter），`link`=Amazon 购买链接（留空就不显示购买按钮），`imageExt`=图片后缀（比如 `jpg`；留空就显示"Photo coming soon"占位），`highlight`=`TRUE`/`FALSE`（`TRUE` 的那一行会显示成页面上单独高亮的 Michaels 颜料块，而不是普通网格卡片，目前是 `liquitex-acrylic-paint` 这一行） |
 | `colors.csv` | 高亮的 Michaels 丙烯颜料块里的"必买颜色"列表 | `order`=显示顺序，`name`=颜色名，`note`=备注（比如"建议买 250ml"，没有就留空） |
-| `faq.csv` | 底部 FAQ 手风琴 | `order`=显示顺序，`question`=问题，`answer`=答案（中英双语直接写在同一格里，想换行就 Alt+Enter） |
-| `settings.csv` | 零散文案 | `id`=设置项名字，`value`=内容。目前有：`suppliesHeading`/`colorsHeading`/`faqHeading`（三个区块的标题）、`acrylicIntro`（"去本地 Michaels 购买"那行提示）、`acrylicName`/`acrylicNote`（推荐的丙烯颜料名称和说明）、`acrylicImage`（这个颜料的图片文件名，留空就是占位图，图片放在 `public/class-supplies/` 下） |
+| `faq.csv` | 顶部 FAQ 手风琴 | `order`=显示顺序，`question`=问题，`answer`=答案（中英双语直接写在同一格里，想换行就 Alt+Enter） |
+| `settings.csv` | 零散文案 | `id`=设置项名字，`value`=内容。目前有：`suppliesHeading`/`colorsHeading`/`faqHeading`（三个区块的标题）、`acrylicIntro`（"去本地 Michaels 购买"那行提示） |
+
+**图片和 `works.csv` 是同一套规则**：图片跟 CSV 放在同一个文件夹（`src/content/class/`），文件名 = 这一行的 `id` + `.` + `imageExt`，比如 `canson-watercolor-pad.jpg`。不用另外传到 `public/` 文件夹。
 
 ⚠️ 同样注意 Excel 保存要选 **"CSV UTF-8"**，不要选普通 "CSV"，否则中文和特殊符号会存坏。
 

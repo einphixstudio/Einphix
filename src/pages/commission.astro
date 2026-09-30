@@ -50,54 +50,66 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
       {showPromo && promoText && <p class="promo">{promoText}</p>}
 
       {pricing.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>Size (inches)</th>
-              <th>Animal (CAD)</th>
-              <th>Portrait (CAD)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pricing.map((row) => (
-              <tr>
-                <td>{row.size}</td>
-                <td>{currency(row.animal)}</td>
-                <td>{currency(row.portrait)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div class="price-cards">
+          <div class="price-card">
+            <h3>Pet Portrait</h3>
+            <ul>
+              {pricing.map((row) => (
+                <li>
+                  <span class="size">{row.size}"</span>
+                  <span class="price">{currency(row.animal)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="price-card">
+            <h3>Human Portrait</h3>
+            <ul>
+              {pricing.map((row) => (
+                <li>
+                  <span class="size">{row.size}"</span>
+                  <span class="price">{currency(row.portrait)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       )}
 
       {addons.length > 0 && (
         <div class="addons">
           <h3>Add-ons</h3>
-          <ul>
+          <div class="addons-grid">
             {addons.map((a) => (
-              <li>
-                <strong>{a.label}:</strong> {a.description}
-              </li>
+              <div class="addon">
+                <span class="label">{a.label}</span>
+                <span class="desc">{a.description}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
-      {depositText && <p class="deposit">{depositText}</p>}
+      {depositText && <p class="note">{depositText}</p>}
     </section>
 
     <section class="steps">
       <h2>How It Works</h2>
-      <div class="steps-grid">
+      <div class="timeline">
         {steps.map((s) => (
-          <div class="step">
-            <span class="badge">{s.step}</span>
-            {s.blocks.map((b) => (
-              <div class="block">
-                <h3>{b.title}</h3>
-                <p>{b.description}</p>
-              </div>
-            ))}
+          <div class="row">
+            <div class="num-col">
+              <span class="num">{s.step}</span>
+              <span class="num-line"></span>
+            </div>
+            <div class="content-col">
+              {s.blocks.map((b) => (
+                <div class="block">
+                  <h3>{b.title}</h3>
+                  <p>{b.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -162,7 +174,7 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
     display: block;
   }
 
-  /* ---------- pricing ---------- */
+  /* ---------- shared section labels ---------- */
   .pricing h2,
   .steps h2 {
     margin: 0 0 20px;
@@ -189,62 +201,87 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
     border-left: 2px solid var(--ink);
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
+  /* ---------- pricing cards ---------- */
+  .price-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(16px, 2.4vw, 28px);
+    margin: 0 0 40px;
   }
-  th {
-    padding: 10px 12px;
-    font-size: 11px;
-    font-weight: 400;
+  .price-card {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: clamp(20px, 2.6vw, 28px);
+  }
+  .price-card h3 {
+    margin: 0 0 14px;
+    font-size: 12px;
+    font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    text-align: left;
-    color: var(--meta);
-    border-bottom: 1px solid var(--rule);
-  }
-  td {
-    padding: 12px;
     color: var(--ink);
-    border-bottom: 1px solid var(--rule);
   }
-  th:not(:first-child),
-  td:not(:first-child) {
-    text-align: right;
+  .price-card ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .price-card li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 14px;
+  }
+  .price-card li:last-child {
+    border-bottom: none;
+  }
+  .price-card .size {
+    color: var(--meta);
+  }
+  .price-card .price {
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
   }
 
+  /* ---------- add-ons ---------- */
   .addons {
-    margin-top: 40px;
+    margin-top: 8px;
   }
   .addons h3 {
-    margin: 0 0 14px;
+    margin: 0 0 18px;
     font-size: 13px;
     font-weight: 400;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--ink);
   }
-  .addons ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  .addons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: clamp(20px, 3vw, 32px);
+  }
+  .addon {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
   }
-  .addons li {
-    font-size: 14px;
+  .addon .label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .addon .desc {
+    font-size: 13px;
     line-height: 1.6;
     color: var(--meta);
   }
-  .addons li strong {
-    color: var(--ink);
-    font-weight: 500;
-  }
 
-  .deposit {
-    margin: 32px 0 0;
+  .note {
+    margin: 36px 0 0;
     padding: 16px 18px;
     max-width: 60ch;
     font-size: 13px;
@@ -253,62 +290,69 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
     background: var(--frame-bg);
   }
 
-  /* ---------- steps ---------- */
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(28px, 4vw, 48px);
-  }
-  .step {
+  /* ---------- steps timeline ---------- */
+  .timeline {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding-left: clamp(20px, 3vw, 32px);
-    border-left: 1px solid var(--rule);
   }
-  .step:first-child {
-    padding-left: 0;
-    border-left: none;
+  .row {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: clamp(20px, 3vw, 36px);
   }
-  .badge {
+  .num-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .num {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: var(--ink);
     color: var(--bg);
-    font-size: 12px;
+    font-size: 13px;
+  }
+  .num-line {
+    flex: 1 1 auto;
+    width: 1px;
+    margin-top: 8px;
+    background: var(--rule);
+  }
+  .row:last-child .num-line {
+    display: none;
+  }
+  .content-col {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(20px, 2.6vw, 28px);
+    padding-bottom: clamp(32px, 4.5vw, 56px);
+  }
+  .row:last-child .content-col {
+    padding-bottom: 0;
   }
   .block h3 {
     margin: 0 0 8px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: var(--ink);
   }
   .block p {
     margin: 0;
+    max-width: 62ch;
     font-size: 13px;
-    line-height: 1.65;
+    line-height: 1.7;
     color: var(--meta);
     white-space: pre-line;
   }
 
-  @media (max-width: 860px) {
-    .steps-grid {
+  @media (max-width: 560px) {
+    .price-cards {
       grid-template-columns: 1fr;
-      gap: 32px;
-    }
-    .step {
-      padding-left: 0;
-      padding-top: 24px;
-      border-left: none;
-      border-top: 1px solid var(--rule);
-    }
-    .step:first-child {
-      padding-top: 0;
-      border-top: none;
     }
   }
 </style>

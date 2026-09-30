@@ -1,19 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
+import { Picture } from 'astro:assets';
 import { getClassSetting, getSupplies, getColors, getFaq } from '../lib/classPage';
 
-const [suppliesHeading, acrylicIntro, acrylicName, acrylicNote, acrylicImage, colorsHeading, faqHeading] =
-  await Promise.all([
-    getClassSetting('suppliesHeading'),
-    getClassSetting('acrylicIntro'),
-    getClassSetting('acrylicName'),
-    getClassSetting('acrylicNote'),
-    getClassSetting('acrylicImage'),
-    getClassSetting('colorsHeading'),
-    getClassSetting('faqHeading'),
-  ]);
-const [supplies, colors, faq] = await Promise.all([getSupplies(), getColors(), getFaq()]);
+const [suppliesHeading, acrylicIntro, colorsHeading, faqHeading] = await Promise.all([
+  getClassSetting('suppliesHeading'),
+  getClassSetting('acrylicIntro'),
+  getClassSetting('colorsHeading'),
+  getClassSetting('faqHeading'),
+]);
+const [allSupplies, colors, faq] = await Promise.all([getSupplies(), getColors(), getFaq()]);
+const supplies = allSupplies.filter((s) => !s.highlight);
+const acrylic = allSupplies.find((s) => s.highlight);
 ---
 
 <Layout title="Einphix — Class">
@@ -48,8 +47,8 @@ const [supplies, colors, faq] = await Promise.all([getSupplies(), getColors(), g
           {supplies.map((item) => (
             <div class="supply-card">
               <div class="thumb">
-                {item.imageExt ? (
-                  <img src={`/class-supplies/${item.id}.${item.imageExt}`} alt={item.name} />
+                {item.image ? (
+                  <Picture src={item.image} alt={item.name} formats={['avif', 'webp']} fallbackFormat="jpeg" width={480} />
                 ) : (
                   <span class="placeholder">Photo coming soon</span>
                 )}
@@ -66,20 +65,20 @@ const [supplies, colors, faq] = await Promise.all([getSupplies(), getColors(), g
         </div>
       )}
 
-      {acrylicName && (
+      {acrylic && (
         <div class="acrylic">
           {acrylicIntro && <p class="acrylic-intro">{acrylicIntro}</p>}
           <div class="acrylic-card">
             <div class="thumb">
-              {acrylicImage ? (
-                <img src={`/class-supplies/${acrylicImage}`} alt={acrylicName} />
+              {acrylic.image ? (
+                <Picture src={acrylic.image} alt={acrylic.name} formats={['avif', 'webp']} fallbackFormat="jpeg" width={520} />
               ) : (
                 <span class="placeholder">Photo coming soon</span>
               )}
             </div>
             <div class="acrylic-copy">
-              <h3>{acrylicName}</h3>
-              {acrylicNote && <p class="desc">{acrylicNote}</p>}
+              <h3>{acrylic.name}</h3>
+              {acrylic.description && <p class="desc">{acrylic.description}</p>}
               {colors.length > 0 && (
                 <>
                   {colorsHeading && <h4>{colorsHeading}</h4>}
@@ -141,11 +140,16 @@ const [supplies, colors, faq] = await Promise.all([getSupplies(), getColors(), g
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--frame-bg);
+    background: oklch(1 0 0);
     overflow: hidden;
     margin-bottom: 14px;
   }
-  .thumb img {
+  .thumb :global(picture) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .thumb :global(img) {
     width: 100%;
     height: 100%;
     object-fit: contain;

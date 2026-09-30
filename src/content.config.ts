@@ -156,19 +156,29 @@ const commissionSettings = defineCollection({
 // ---------- Class page ----------
 // Same idea as the commission CSVs: separate small tables, none of it is
 // artwork data. Product photos are optional (`imageExt` blank = no photo
-// yet) and live in public/class-supplies/ as plain static files rather than
-// through astro:assets, since most rows won't have one yet and image()
-// would fail validation on a missing file.
+// yet) and, same as works.csv, live flat next to the CSV in
+// src/content/class/ with filename = `<id>.<imageExt>`, resolved through
+// astro:assets via the `image()` schema helper. `highlight` marks the one
+// row (the Michaels acrylic paint) that gets its own callout block instead
+// of appearing in the regular supply grid.
 
 const classSupplies = defineCollection({
-  loader: file('src/content/class/supplies.csv', { parser: parseCsv }),
-  schema: z.object({
-    imageExt: z.preprocess(emptyToUndefined, z.string().optional()),
-    name: z.string(),
-    description: z.preprocess(emptyToUndefined, z.string().optional()),
-    link: z.preprocess(emptyToUndefined, z.string().optional()),
-    order: z.coerce.number(),
+  loader: file('src/content/class/supplies.csv', {
+    parser: (text) =>
+      parseCsv(text).map((row) => ({
+        ...row,
+        image: row.imageExt ? `${row.id}.${row.imageExt}` : undefined,
+      })),
   }),
+  schema: ({ image }) =>
+    z.object({
+      image: image().optional(),
+      name: z.string(),
+      description: z.preprocess(emptyToUndefined, z.string().optional()),
+      link: z.preprocess(emptyToUndefined, z.string().optional()),
+      order: z.coerce.number(),
+      highlight: z.preprocess(isTrue, z.boolean()),
+    }),
 });
 
 const classColors = defineCollection({
