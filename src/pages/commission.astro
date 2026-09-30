@@ -5,7 +5,7 @@ import { Picture } from 'astro:assets';
 import { getEntry } from 'astro:content';
 import { getSetting, isPromoActive, getPricingRows, getSteps, getAddons } from '../lib/commission';
 
-const [heroHeading, heroSubtext, heroImageId, showPromo, promoText, pricingIntro, depositText] =
+const [heroHeading, heroSubtext, heroImageId, showPromo, promoText, pricingIntro, depositText, bookingEmail] =
   await Promise.all([
     getSetting('heroHeading'),
     getSetting('heroSubtext'),
@@ -14,11 +14,18 @@ const [heroHeading, heroSubtext, heroImageId, showPromo, promoText, pricingIntro
     getSetting('promoText'),
     getSetting('pricingIntro'),
     getSetting('depositText'),
+    getSetting('bookingEmail'),
   ]);
 const [pricing, steps, addons] = await Promise.all([getPricingRows(), getSteps(), getAddons()]);
 const heroWork = heroImageId ? await getEntry('works', heroImageId) : undefined;
 
 const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
+
+// A leading emoji in the CSV text (e.g. "🎄 Christmas Special — ...") becomes
+// its own icon badge instead of sitting inline with the sentence.
+const promoIconMatch = promoText?.match(/^(\p{Emoji}+)\s*/u);
+const promoIcon = promoIconMatch?.[1];
+const promoMessage = promoIcon ? promoText!.slice(promoIconMatch![0].length) : promoText;
 ---
 
 <Layout title="Einphix — Commission">
@@ -31,14 +38,18 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
       </div>
       {heroWork && (
         <div class="portrait">
-          <Picture
-            src={heroWork.data.image}
-            alt={heroWork.data.title}
-            formats={['avif', 'webp']}
-            fallbackFormat="jpeg"
-            width={700}
-            loading="eager"
-          />
+          {heroWork.data.image ? (
+            <Picture
+              src={heroWork.data.image}
+              alt={heroWork.data.title}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpeg"
+              width={700}
+              loading="eager"
+            />
+          ) : (
+            <div class="missing">Image missing</div>
+          )}
         </div>
       )}
     </section>
@@ -47,12 +58,17 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
       <h2>Pricing</h2>
       {pricingIntro && <p class="intro">{pricingIntro}</p>}
 
-      {showPromo && promoText && <p class="promo">{promoText}</p>}
+      {showPromo && promoText && (
+        <div class="promo">
+          {promoIcon && <span class="promo-icon">{promoIcon}</span>}
+          <p>{promoMessage}</p>
+        </div>
+      )}
 
       {pricing.length > 0 && (
         <div class="price-cards">
           <div class="price-card">
-            <h3>Pet Portrait</h3>
+            <h3>Pet & Landscape</h3>
             <ul>
               {pricing.map((row) => (
                 <li>
@@ -76,6 +92,18 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
         </div>
       )}
 
+      {depositText && (
+        <div class="deposit">
+          <span class="deposit-label">Booking &amp; Payment</span>
+          <p>{depositText}</p>
+          {bookingEmail && (
+            <p class="deposit-cta">
+              Ready to book? Email <a href={`mailto:${bookingEmail}`}>{bookingEmail}</a> to get started.
+            </p>
+          )}
+        </div>
+      )}
+
       {addons.length > 0 && (
         <div class="addons">
           <h3>Add-ons</h3>
@@ -89,8 +117,6 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
           </div>
         </div>
       )}
-
-      {depositText && <p class="note">{depositText}</p>}
     </section>
 
     <section class="steps">
@@ -173,6 +199,18 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
     object-fit: cover;
     display: block;
   }
+  .hero .portrait .missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--meta);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+  }
 
   /* ---------- shared section labels ---------- */
   .pricing h2,
@@ -192,13 +230,33 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
     color: var(--meta);
   }
   .promo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
     margin: 0 0 28px;
-    padding: 14px 18px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, oklch(0.96 0.035 75), oklch(0.93 0.045 55));
+    border: 1px solid oklch(0.85 0.05 60);
+    box-shadow: 0 10px 28px -20px oklch(0.5 0.1 50 / 0.45);
+  }
+  .promo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: oklch(1 0 0 / 0.55);
+    font-size: 16px;
+  }
+  .promo p {
+    margin: 0;
     font-size: 14px;
+    font-weight: 500;
     line-height: 1.5;
     color: var(--ink);
-    background: oklch(0.94 0.03 80);
-    border-left: 2px solid var(--ink);
   }
 
   /* ---------- pricing cards ---------- */
@@ -247,6 +305,45 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
     white-space: nowrap;
   }
 
+  /* ---------- booking & payment ---------- */
+  .deposit {
+    margin: 0 0 40px;
+    padding: clamp(18px, 2.4vw, 24px) clamp(20px, 2.6vw, 28px);
+    background: var(--panel);
+    border: 1px solid var(--ink);
+  }
+  .deposit-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .deposit p {
+    margin: 0;
+    max-width: 62ch;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .deposit p.deposit-cta {
+    margin-top: 12px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--meta);
+  }
+  .deposit-cta a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .deposit-cta a:hover {
+    opacity: 0.7;
+  }
+
   /* ---------- add-ons ---------- */
   .addons {
     margin-top: 8px;
@@ -278,16 +375,6 @@ const currency = (n: number) => `$${n.toLocaleString('en-US')}`;
     font-size: 13px;
     line-height: 1.6;
     color: var(--meta);
-  }
-
-  .note {
-    margin: 36px 0 0;
-    padding: 16px 18px;
-    max-width: 60ch;
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--meta);
-    background: var(--frame-bg);
   }
 
   /* ---------- steps timeline ---------- */

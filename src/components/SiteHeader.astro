@@ -1,6 +1,7 @@
 ---
 import { getStudyMedia } from '../lib/studies';
 import { YEAR_BUCKETS } from '../lib/workBuckets';
+import { getSeriesList } from '../lib/series';
 
 interface Props {
   current?: 'work' | 'about' | 'studies' | 'series' | 'commission' | 'class';
@@ -9,6 +10,7 @@ interface Props {
 const { current = 'work' } = Astro.props;
 
 const studyMedia = await getStudyMedia();
+const genericSeries = await getSeriesList();
 
 const socials = [
   { href: 'https://www.instagram.com/einphix/', title: 'Instagram', icon: '/icons/instagram.svg' },
@@ -25,7 +27,12 @@ const workYears = YEAR_BUCKETS.map((bucket, i) => ({
   href: `/work/${bucket.slug}`,
 }));
 
-const seriesItems = [{ cls: 'y1', label: 'Furry Forces', href: '/series/furry-forces' }];
+// "Furry Forces" is hand-built (its own layout) and always listed first;
+// any other series in the CSV gets a generic page automatically.
+const seriesItems = [
+  { cls: 'y1', label: 'Furry Forces', href: '/series/furry-forces' },
+  ...genericSeries.map((s, i) => ({ cls: `y${((i + 2) % 6)}`, label: s.label, href: `/series/${s.slug}` })),
+];
 ---
 
 <header class="site-head">

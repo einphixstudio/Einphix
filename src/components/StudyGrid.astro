@@ -10,29 +10,34 @@ interface Props {
 const { studies } = Astro.props;
 
 // One larger rendition per piece for the lightbox — the grid thumbnails
-// below are optimized small.
+// below are optimized small. Skipped for a work whose image file is
+// missing (see content.config.ts); its tile shows a placeholder instead.
 const lightboxImages = await Promise.all(
-  studies.map((s) => getImage({ src: s.data.image, width: 1600, format: 'webp' })),
+  studies.map((s) => (s.data.image ? getImage({ src: s.data.image, width: 1600, format: 'webp' }) : undefined)),
 );
 ---
 
 <div class="grid" data-grid>
   {studies.map((s, i) => (
     <a class="tile" href="#" data-idx={i}>
-      <Picture
-        src={s.data.image}
-        alt={s.data.title}
-        formats={['avif', 'webp']}
-        fallbackFormat="jpeg"
-        width={640}
-        loading={i < 6 ? 'eager' : 'lazy'}
-        draggable="false"
-      />
+      {s.data.image ? (
+        <Picture
+          src={s.data.image}
+          alt={s.data.title}
+          formats={['avif', 'webp']}
+          fallbackFormat="jpeg"
+          width={640}
+          loading={i < 6 ? 'eager' : 'lazy'}
+          draggable="false"
+        />
+      ) : (
+        <div class="missing">Image missing</div>
+      )}
     </a>
   ))}
   <span class="tile-data" hidden>
     {studies.map((s, i) => (
-      <span data-title={s.data.title} data-meta={studyCaption(s)} data-full={lightboxImages[i].src} />
+      <span data-title={s.data.title} data-meta={studyCaption(s)} data-full={lightboxImages[i]?.src ?? ''} />
     ))}
   </span>
 </div>
@@ -78,6 +83,18 @@ const lightboxImages = await Promise.all(
   }
   .tile:hover :global(img) {
     transform: scale(1.03);
+  }
+  .tile .missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 220px;
+    height: 100%;
+    color: var(--meta);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
   }
   .empty {
     padding: 0 var(--pad-x) clamp(40px, 6vw, 80px);
@@ -216,6 +233,7 @@ const lightboxImages = await Promise.all(
       if (!lbImg || !lbTitle || !lbMeta || entries.length === 0) return;
       at = (i + entries.length) % entries.length;
       const e = entries[at];
+      if (!e.full) return;
       lbImg.src = e.full;
       lbImg.alt = e.title;
       lbTitle.textContent = e.title;

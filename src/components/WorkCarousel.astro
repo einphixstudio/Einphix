@@ -14,16 +14,20 @@ const { works } = Astro.props;
     {works.map((work, i) => (
       <figure class="work" data-active={i === 0 ? 'true' : 'false'}>
         <div class="plate">
-          <Picture
-            src={work.data.image}
-            alt={work.data.title}
-            formats={['avif', 'webp']}
-            fallbackFormat="jpeg"
-            widths={[640, 1200, 1920]}
-            sizes="100vw"
-            loading={i === 0 ? 'eager' : 'lazy'}
-            fetchpriority={i === 0 ? 'high' : 'auto'}
-          />
+          {work.data.image ? (
+            <Picture
+              src={work.data.image}
+              alt={work.data.title}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpeg"
+              widths={[640, 1200, 1920]}
+              sizes="100vw"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : 'auto'}
+            />
+          ) : (
+            <div class="missing">Image missing</div>
+          )}
         </div>
         <figcaption>
           <span>{work.data.title}</span>
@@ -85,6 +89,18 @@ const { works } = Astro.props;
     height: auto;
     background: var(--frame-bg);
     box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.45);
+  }
+  .work .plate .missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(480px, 70vw);
+    height: min(360px, 50vh);
+    color: var(--meta);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--frame-bg);
   }
   .work figcaption {
     margin-top: 18px;

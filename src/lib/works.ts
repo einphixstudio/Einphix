@@ -10,9 +10,19 @@ export async function getFeaturedWorks(): Promise<Work[]> {
 // A manually set `order` acts as a pin: it always outranks anything without
 // one, and two pinned works compare by that number. Everything unpinned
 // falls back to year, newest first — the previous default behavior.
-export function compareWorks(a: Work, b: Work): number {
-  const aOrder = a.data.order;
-  const bOrder = b.data.order;
+//
+// `kindContext` is the page family being sorted for (e.g. 'work' for a
+// Work-year page, 'study' for a Studies page). A piece showing up there via
+// `kind2` (rather than its primary `kind`) is pinned by `kind2Order`
+// instead of `order` — its place on that page is independent of its place
+// on its primary one.
+export function compareWorks(a: Work, b: Work, kindContext?: Work['data']['kind']): number {
+  const orderOf = (w: Work) =>
+    kindContext && w.data.kind !== kindContext && w.data.kind2 === kindContext
+      ? w.data.kind2Order
+      : w.data.order;
+  const aOrder = orderOf(a);
+  const bOrder = orderOf(b);
   if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
   if (aOrder !== undefined) return -1;
   if (bOrder !== undefined) return 1;

@@ -14,14 +14,18 @@ const portrait = works.find((w) => w.id === '2017-crowned bunny girl');
     <div class="about">
       {portrait && (
         <div class="portrait">
-          <Picture
-            src={portrait.data.image}
-            alt={portrait.data.title}
-            formats={['avif', 'webp']}
-            fallbackFormat="jpeg"
-            width={700}
-            loading="eager"
-          />
+          {portrait.data.image ? (
+            <Picture
+              src={portrait.data.image}
+              alt={portrait.data.title}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpeg"
+              width={700}
+              loading="eager"
+            />
+          ) : (
+            <div class="missing">Image missing</div>
+          )}
         </div>
       )}
       <div class="copy">
@@ -83,6 +87,18 @@ const portrait = works.find((w) => w.id === '2017-crowned bunny girl');
     height: 100%;
     object-fit: cover;
     display: block;
+  }
+  .portrait .missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--meta);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
   }
   .copy {
     flex: 1 1 360px;

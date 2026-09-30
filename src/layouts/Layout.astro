@@ -3,14 +3,20 @@ import '@fontsource/hanken-grotesk/300.css';
 import '@fontsource/hanken-grotesk/400.css';
 import '@fontsource/hanken-grotesk/500.css';
 import '../styles/tokens.css';
+// Placeholder favicon — replacing src/content/general/einphix logo.png with
+// a same-named file is enough; a different filename needs this path updated.
+import favicon from '../content/general/einphix logo.png';
 
 interface Props {
   title: string;
   /** Locks body to the viewport height instead of growing with content — for single-screen pages like the home carousel. */
   fitViewport?: boolean;
+  /** Same lock, but only on desktop — the Work-year / Series rail pages fall back to a normal scrolling column on mobile instead of a horizontal drag rail. */
+  fitViewportDesktopOnly?: boolean;
 }
 
-const { title, fitViewport = false } = Astro.props;
+const { title, fitViewport = false, fitViewportDesktopOnly = false } = Astro.props;
+const bodyClass = fitViewport ? 'fit-viewport' : fitViewportDesktopOnly ? 'fit-viewport-desktop' : undefined;
 ---
 
 <html lang="en">
@@ -18,8 +24,9 @@ const { title, fitViewport = false } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <link rel="icon" href={favicon.src} type="image/png" />
   </head>
-  <body class={fitViewport ? 'fit-viewport' : undefined}>
+  <body class={bodyClass}>
     <slot />
   </body>
 </html>

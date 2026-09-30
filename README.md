@@ -32,11 +32,13 @@ npm run preview  # 本地预览构建结果
    | `year` | 年份 | `2025` |
    | `medium` | 材质 | `oil on canvas` |
    | `dimensions` | 尺寸，**只写数字**，不用写 "in"，网站会自动补上——`14x14`、`14 x 14`、`7.5x9.5` 怎么写都行 | `14x14` |
-   | `series` | 所属系列，没有就留空 | `furry-forces` |
-   | `kind` | `work`（按年份放进 Work 页面）或 `study`（探索性作品，比如 CG、水粉、跟主风格不搭的尝试——放进 Studies 分类），留空默认 `work`。`study`/`studies`、大小写都认 | |
+   | `series` | 所属系列，没有就留空。填了之后自动会有一个 `/series/<系列名>` 页面（用跟 Work 年份页一样的横向卷轴 + 灯箱），导航栏 Series 下拉也会自动多一项，不用改代码——除非这个系列需要特殊设计（像 Furry Forces 那样），那种要专门跟我说 | `dreamscape` |
+   | `kind` | `work`（按年份放进 Work 页面）、`study`（探索性作品，比如 CG、水粉、跟主风格不搭的尝试——放进 Studies 分类）或 `commission`（委托作品，不会出现在 Work 或 Studies 任何页面——比如 Commission 页面头图这种，只是单独被某个页面点名引用的画，不需要出现在作品列表里），留空默认 `work`。大小写、单复数都认（`study`/`studies`、`commission`/`commissions`） | |
+   | `kind2` | 可选，**让这张画同时出现在第二个分类的页面里**。比如一张画 `kind=study`、`kind2=work`，就会同时出现在它的 Studies 分类页**和**对应年份的 Work 页面。取值范围跟 `kind` 一样（`work`/`study`/`commission`），留空就是没有第二个分类 | `work` |
    | `featured` | 是否出现在首页轮播，`TRUE`/`FALSE` | `TRUE` |
    | `featuredOrder` | **只管首页轮播**的顺序，数字越小越靠前。只有 `featured=TRUE` 才有意义 | `1` |
-   | `order` | **只管这张画在自己的 Work 年份页 / Studies 页面里排第几**，数字越小越靠前，跟首页轮播完全无关。填了就"置顶"到该年份/该类型页面最前面（在其它同样填了 `order` 的画之间按数字排）；不填就按年份新到旧自然排在后面 | `1` |
+   | `order` | **只管这张画在自己主分类（`kind`）对应页面里排第几**，数字越小越靠前，跟首页轮播完全无关。填了就"置顶"到该年份/该类型页面最前面（在其它同样填了 `order` 的画之间按数字排）；不填就按年份新到旧自然排在后面 | `1` |
+   | `kind2Order` | 跟 `order`同样的排序规则，但**只管第二个分类（`kind2`）对应页面里排第几**——跟 `order` 互相独立，只有填了 `kind2` 才有意义 | `1` |
    | `description` | 这张画的介绍文字，没有就留空（暂时还没有页面会显示它，先存着） | |
 
    直接用 Excel / Numbers / Google Sheets 打开 `works.csv` 编辑，保存时**保持 CSV 格式**（不要存成 `.xlsx`）。
@@ -46,6 +48,8 @@ npm run preview  # 本地预览构建结果
 3. 保存后跑 `npm run dev` 看效果，没问题就提交、推送到 GitHub，Vercel 会自动重新部署。
 
 CSV 里没写的字段（比如某天想加个 `alt` 文字描述）需要改 `src/content.config.ts` 里的 schema 定义。
+
+**如果某一行的图片文件还没传上去，或者文件名跟 `id` 不一致**：网站不会因此崩溃——那张图的位置会显示一个灰底 "Image missing" 占位块，其他所有作品照常显示，终端会打印一行提示（`[works.csv] image not found for "<id>": <文件名>`）方便你知道该补哪张图。等图片传上去、文件名对上了，刷新页面占位块就会自动变成真实的画。
 
 ## 怎么改 Commission 页面的内容
 
@@ -107,6 +111,7 @@ src/
 │   ├── works.ts                 首页轮播用的数据函数
 │   ├── workBuckets.ts           年份分桶逻辑 + 作品年份页的数据函数
 │   ├── studies.ts               Studies 的分类逻辑（从 medium 字段自动生成）+ 数据函数
+│   ├── series.ts                通用系列页的逻辑（从 series 字段自动生成，排除有专属页面的系列）+ 数据函数
 │   ├── commission.ts            读取 Commission 页面 4 个 CSV 的数据函数
 │   └── classPage.ts             读取 Class 页面 4 个 CSV 的数据函数
 ├── styles/tokens.css           全局设计变量（颜色、间距）
@@ -115,19 +120,21 @@ src/
     ├── about.astro               About 页面
     ├── commission.astro          Commission 页面
     ├── class.astro                Class 页面
-    ├── series/furry-forces.astro Furry Forces 系列页
+    ├── series/
+    │   ├── furry-forces.astro    Furry Forces 专属系列页（自定义设计）
+    │   └── [series].astro        其它系列的通用页，如 /series/dreamscape
     ├── work/[bucket].astro      作品年份页，如 /work/2025-2024
     └── studies/
         ├── index.astro           /studies，显示所有 study 作品
         └── [medium].astro        /studies/watercolor 等，按类型筛选
 ```
 
-已经做好的页面：首页（`/`）、About（`/about`）、Commission（`/commission`）、Class（`/class`）、Furry Forces 系列页（`/series/furry-forces`）、作品年份页（`/work/2026`、`/work/2025-2024` 等 6 个年份区间，2026 单独一档）、Studies（`/studies` 和 `/studies/<类型>`）。
+已经做好的页面：首页（`/`）、About（`/about`）、Commission（`/commission`）、Class（`/class`）、Series 系列页（`/series/<系列名>`）、作品年份页（`/work/2026`、`/work/2025-2024` 等 6 个年份区间，2026 单独一档）、Studies（`/studies` 和 `/studies/<类型>`）。
 
 年份区间写在 [workBuckets.ts](src/lib/workBuckets.ts) 的 `YEAR_BUCKETS` 里，以后年份不够用了（比如要加 2027），去那改。
 
 **Studies 的分类是自动生成的**：不是像年份那样写死列表，而是看 CSV 里 `kind=study` 的作品用了哪些 `medium` 值（比如 `watercolor`、`digital`），就自动生成对应的页面和导航下拉菜单项。以后加一种新类型，不用改代码，CSV 里出现了就自动有页面。
 
-`/series` 目前只做了 Furry Forces 这一个。
+**Series 页面也是自动生成的，逻辑跟 Studies 一样**：`works.csv` 里只要有作品填了 `series` 字段，就自动会有对应的 `/series/<系列名>` 页面（用的是跟 Work 年份页一样的横向卷轴 + 灯箱模板），导航栏 Series 下拉也自动跟着更新。**例外**：像 Furry Forces 这种需要专属设计的系列，要在 [series.ts](src/lib/series.ts) 的 `CUSTOM_SERIES_SLUGS` 里加上它的 slug 排除掉，然后单独建一个 `src/pages/series/<系列名>.astro` 手工设计（参照 `furry-forces.astro`）。以后新系列如果没有特殊要求，CSV 里填上 `series` 就完事，不用找我改代码；如果想要单独设计，跟我说一声。
 
 `docs/design-handoff/` 保留了最初的设计交付文档（`README.md`、`reference/home.html` 视觉基准、原始设计稿），方便以后对照。

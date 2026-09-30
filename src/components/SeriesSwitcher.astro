@@ -1,0 +1,53 @@
+---
+import type { SeriesEntry } from '../lib/series';
+
+interface Props {
+  series: SeriesEntry[];
+  currentSlug: string;
+}
+
+const { series, currentSlug } = Astro.props;
+---
+
+<div class="years">
+  <nav>
+    {series.map((s) => (
+      <a href={`/series/${s.slug}`} aria-current={s.slug === currentSlug ? 'page' : undefined}>
+        {s.label}
+      </a>
+    ))}
+  </nav>
+</div>
+
+<style>
+  .years {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    padding: 0 var(--pad-x) 20px;
+  }
+  .years nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: clamp(12px, 1.4vw, 20px);
+  }
+  .years a {
+    padding: 4px 0;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--meta);
+    border-bottom: 1px solid transparent;
+    transition: color 220ms, border-color 220ms;
+  }
+  .years a:hover {
+    color: var(--ink);
+  }
+  .years a[aria-current='page'] {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+</style>

@@ -24,9 +24,9 @@ export function getBucket(slug: string): YearBucket | undefined {
 export async function getWorksForBucket(bucket: YearBucket): Promise<Work[]> {
   const works = await getCollection(
     'works',
-    ({ data }) => data.kind === 'work' && bucket.test(data.year),
+    ({ data }) => (data.kind === 'work' || data.kind2 === 'work') && bucket.test(data.year),
   );
-  return works.sort(compareWorks);
+  return works.sort((a, b) => compareWorks(a, b, 'work'));
 }
 
 export function workYearCaptionLine2(work: Work): string {

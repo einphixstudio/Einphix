@@ -13,8 +13,10 @@ const lethalFluff = works.find((w) => w.id === '2024-furry force-leatha lfluff')
 
 // Visual order on the page — also the order the lightbox steps through.
 const ordered = [fighterPilot, nightOutSwat, lethalFluff].filter((w) => w !== undefined);
+// Skipped for a work whose image file is missing (see content.config.ts);
+// its tile shows a placeholder instead and can't be opened in the lightbox.
 const lightboxImages = await Promise.all(
-  ordered.map((w) => getImage({ src: w.data.image, width: 1600, format: 'webp' })),
+  ordered.map((w) => (w.data.image ? getImage({ src: w.data.image, width: 1600, format: 'webp' }) : undefined)),
 );
 ---
 
@@ -33,41 +35,53 @@ const lightboxImages = await Promise.all(
       <div class="img-pair">
         {fighterPilot && (
           <a class="tile img-a" href="#" data-idx="0">
-            <Picture
-              src={fighterPilot.data.image}
-              alt={fighterPilot.data.title}
-              formats={['avif', 'webp']}
-              fallbackFormat="jpeg"
-              height={700}
-              loading="eager"
-            />
+            {fighterPilot.data.image ? (
+              <Picture
+                src={fighterPilot.data.image}
+                alt={fighterPilot.data.title}
+                formats={['avif', 'webp']}
+                fallbackFormat="jpeg"
+                height={700}
+                loading="eager"
+              />
+            ) : (
+              <div class="missing">Image missing</div>
+            )}
           </a>
         )}
 
         {nightOutSwat && (
           <a class="tile img-b" href="#" data-idx="1">
-            <Picture
-              src={nightOutSwat.data.image}
-              alt={nightOutSwat.data.title}
-              formats={['avif', 'webp']}
-              fallbackFormat="jpeg"
-              height={700}
-              loading="eager"
-            />
+            {nightOutSwat.data.image ? (
+              <Picture
+                src={nightOutSwat.data.image}
+                alt={nightOutSwat.data.title}
+                formats={['avif', 'webp']}
+                fallbackFormat="jpeg"
+                height={700}
+                loading="eager"
+              />
+            ) : (
+              <div class="missing">Image missing</div>
+            )}
           </a>
         )}
       </div>
 
       {lethalFluff && (
         <a class="tile img-c" href="#" data-idx="2">
-          <Picture
-            src={lethalFluff.data.image}
-            alt={lethalFluff.data.title}
-            formats={['avif', 'webp']}
-            fallbackFormat="jpeg"
-            width={1100}
-            loading="eager"
-          />
+          {lethalFluff.data.image ? (
+            <Picture
+              src={lethalFluff.data.image}
+              alt={lethalFluff.data.title}
+              formats={['avif', 'webp']}
+              fallbackFormat="jpeg"
+              width={1100}
+              loading="eager"
+            />
+          ) : (
+            <div class="missing">Image missing</div>
+          )}
         </a>
       )}
 
@@ -81,7 +95,7 @@ const lightboxImages = await Promise.all(
 
     <span class="tile-data" hidden>
       {ordered.map((w, i) => (
-        <span data-title={w.data.title} data-meta={workYearCaptionLine2(w)} data-full={lightboxImages[i].src} />
+        <span data-title={w.data.title} data-meta={workYearCaptionLine2(w)} data-full={lightboxImages[i]?.src ?? ''} />
       ))}
     </span>
   </main>
@@ -175,6 +189,10 @@ const lightboxImages = await Promise.all(
     width: auto;
     height: 100%;
   }
+  .img-pair .tile .missing {
+    width: clamp(200px, 24vw, 320px);
+    height: 100%;
+  }
 
   .img-c {
     grid-area: imgC;
@@ -182,6 +200,21 @@ const lightboxImages = await Promise.all(
   .img-c :global(img) {
     width: 100%;
     height: auto;
+  }
+  .img-c .missing {
+    width: 100%;
+    height: clamp(240px, 30vw, 420px);
+  }
+
+  .tile .missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--meta);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
   }
 
   .caption-block {
@@ -223,6 +256,10 @@ const lightboxImages = await Promise.all(
     .img-pair .tile :global(img) {
       width: 100%;
       height: auto;
+    }
+    .img-pair .tile .missing {
+      width: 100%;
+      height: 200px;
     }
     .caption-block {
       align-self: start;
@@ -362,6 +399,7 @@ const lightboxImages = await Promise.all(
       if (!lbImg || !lbTitle || !lbMeta || entries.length === 0) return;
       at = (i + entries.length) % entries.length;
       const e = entries[at];
+      if (!e.full) return;
       lbImg.src = e.full;
       lbImg.alt = e.title;
       lbTitle.textContent = e.title;

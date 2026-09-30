@@ -1,6 +1,8 @@
 import { defineCollection } from 'astro:content';
 import { file } from 'astro/loaders';
 import { z } from 'astro/zod';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 // Minimal RFC4180-ish CSV parser: handles quoted fields, escaped quotes, commas/newlines inside quotes.
 function parseCsv(text: string): Record<string, string>[] {
@@ -66,23 +68,50 @@ const emptyToUndefined = (v: unknown) => (v === '' || v == null ? undefined : v)
 // Excel/Numbers/Sheets all export boolean-looking cells as "TRUE"/"FALSE" (not
 // lowercase), so match case-insensitively rather than requiring one spelling.
 const isTrue = (v: unknown) => typeof v === 'string' && v.toLowerCase() === 'true';
-// Accept "study"/"studies"/"work"/"works" in any case — whichever reads
-// naturally when typing — rather than requiring one exact spelling.
+// Accept "study"/"studies"/"work"/"works"/"commission"/"commissions" in any
+// case — whichever reads naturally when typing — rather than requiring one
+// exact spelling. Empty/unrecognized defaults to "work".
 const normalizeKind = (v: unknown) => {
   const s = emptyToUndefined(v);
   if (typeof s !== 'string') return 'work';
-  return /^stud/i.test(s.trim()) ? 'study' : 'work';
+  const trimmed = s.trim();
+  if (/^stud/i.test(trimmed)) return 'study';
+  if (/^comm/i.test(trimmed)) return 'commission';
+  return 'work';
+};
+// Same vocabulary as `kind`, but for the optional *second* page a work
+// should also appear on (e.g. a study that should also show up on its
+// Work-year page). Unlike `kind`, empty/unrecognized stays unset rather
+// than defaulting to "work" — most works don't have a second placement.
+const normalizeKind2 = (v: unknown) => {
+  const s = emptyToUndefined(v);
+  if (typeof s !== 'string') return undefined;
+  const trimmed = s.trim();
+  if (/^stud/i.test(trimmed)) return 'study';
+  if (/^comm/i.test(trimmed)) return 'commission';
+  if (/^work/i.test(trimmed)) return 'work';
+  return undefined;
 };
 
 // The CSV only carries an `imageExt` (jpg/png/...) — the actual filename is
 // always `<id>.<ext>` (all images live flat in src/content/works/, with the
 // id conventionally starting with the year, e.g. "2025-the-fish-thief"), so
-// the artist never has to type the filename twice.
-function withImagePath(rows: Record<string, string>[]): Record<string, string>[] {
-  return rows.map((row) => ({
-    ...row,
-    image: `${row.id}.${row.imageExt}`,
-  }));
+// the artist never has to type the filename twice. A row whose file doesn't
+// actually exist on disk (typo, upload forgotten, etc.) must never crash the
+// whole site — image() would throw ImageNotFound for every page, not just
+// the one work — so we check the file exists here and fall back to
+// `image: undefined`, which every page renders as an "image missing" tile
+// instead of the artwork (see WorkImage.astro).
+const worksDir = fileURLToPath(new URL('./content/works/', import.meta.url));
+function withImagePath(rows: Record<string, string>[]): Record<string, string | undefined>[] {
+  return rows.map((row) => {
+    const filename = `${row.id}.${row.imageExt}`;
+    const exists = fs.existsSync(`${worksDir}${filename}`);
+    if (!exists) {
+      console.warn(`[works.csv] image not found for "${row.id}": ${filename}`);
+    }
+    return { ...row, image: exists ? filename : undefined };
+  });
 }
 
 const works = defineCollection({
@@ -95,10 +124,16 @@ const works = defineCollection({
       year: z.coerce.number(),
       medium: z.string(),
       dimensions: z.string(),
-      image: image(),
+      image: image().optional(),
       description: z.preprocess(emptyToUndefined, z.string().optional()),
       series: z.preprocess(emptyToUndefined, z.string().optional()),
-      kind: z.preprocess(normalizeKind, z.enum(['work', 'study'])),
+      kind: z.preprocess(normalizeKind, z.enum(['work', 'study', 'commission'])),
+      // kind2: lets a piece also appear on a second page (e.g. kind=study,
+      // kind2=work shows it on both its Studies page and its Work-year
+      // page). kind2Order is its pin-order on that *second* page only —
+      // kept separate from `order` for the same reason featuredOrder is
+      // separate: a piece's place on each page is an independent decision.
+      kind2: z.preprocess(normalizeKind2, z.enum(['work', 'study', 'commission']).optional()),
       featured: z.preprocess(isTrue, z.boolean()),
       // featuredOrder: home carousel sequence (only meaningful when featured).
       // order: manual "pin to the front" for the Work year / Studies pages.
@@ -106,6 +141,7 @@ const works = defineCollection({
       // in its own year/medium page are independent decisions.
       featuredOrder: z.preprocess(emptyToUndefined, z.coerce.number().optional()),
       order: z.preprocess(emptyToUndefined, z.coerce.number().optional()),
+      kind2Order: z.preprocess(emptyToUndefined, z.coerce.number().optional()),
     }),
 });
 

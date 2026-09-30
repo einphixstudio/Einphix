@@ -18,8 +18,8 @@ function slugify(value: string): string {
 }
 
 export async function getStudies(): Promise<Work[]> {
-  const studies = await getCollection('works', ({ data }) => data.kind === 'study');
-  return studies.sort(compareWorks);
+  const studies = await getCollection('works', ({ data }) => data.kind === 'study' || data.kind2 === 'study');
+  return studies.sort((a, b) => compareWorks(a, b, 'study'));
 }
 
 export async function getStudyMedia(): Promise<StudyMedium[]> {

@@ -46,3 +46,16 @@ body.fit-viewport {
   height: 100vh;
   overflow: hidden;
 }
+
+/* Work-year / Series rail pages: same lock on desktop, but on mobile the
+   rail becomes a normal scrolling column, so the page must grow with it. */
+body.fit-viewport-desktop {
+  height: 100vh;
+  overflow: hidden;
+}
+@media (max-width: 899px) {
+  body.fit-viewport-desktop {
+    height: auto;
+    overflow: visible;
+  }
+}

@@ -1,26 +1,28 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
-import YearSwitcher from '../../components/YearSwitcher.astro';
+import SeriesSwitcher from '../../components/SeriesSwitcher.astro';
 import WorkRail from '../../components/WorkRail.astro';
-import { YEAR_BUCKETS, getWorksForBucket } from '../../lib/workBuckets';
+import { getSeriesList, getWorksBySeriesSlug } from '../../lib/series';
 
 export async function getStaticPaths() {
+  const series = await getSeriesList();
   return Promise.all(
-    YEAR_BUCKETS.map(async (bucket) => ({
-      params: { bucket: bucket.slug },
-      props: { bucket, works: await getWorksForBucket(bucket) },
+    series.map(async (s) => ({
+      params: { series: s.slug },
+      props: { series: s, works: await getWorksBySeriesSlug(s.slug) },
     })),
   );
 }
 
-const { bucket, works } = Astro.props;
+const { series, works } = Astro.props;
+const seriesList = await getSeriesList();
 ---
 
-<Layout title={`Einphix — Work / ${bucket.label}`} fitViewportDesktopOnly>
-  <SiteHeader />
+<Layout title={`Einphix — Series / ${series.label}`} fitViewportDesktopOnly>
+  <SiteHeader current="series" />
   <main>
-    <YearSwitcher currentSlug={bucket.slug} />
+    <SeriesSwitcher series={seriesList} currentSlug={series.slug} />
     {works.length > 0 && <WorkRail works={works} />}
   </main>
 </Layout>

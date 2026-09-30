@@ -11,8 +11,10 @@ const { works } = Astro.props;
 
 // One larger rendition per work for the single-artwork (lightbox) view —
 // the rail's own <Image> below is optimized small, for the thumbnail rail.
+// Skipped for a work whose image file is missing (see content.config.ts);
+// its plate shows a placeholder instead and can't be opened in the lightbox.
 const lightboxImages = await Promise.all(
-  works.map((work) => getImage({ src: work.data.image, width: 1600, format: 'webp' })),
+  works.map((work) => (work.data.image ? getImage({ src: work.data.image, width: 1600, format: 'webp' }) : undefined)),
 );
 ---
 
@@ -25,22 +27,26 @@ const lightboxImages = await Promise.all(
             class="plate"
             href="#"
             data-idx={i}
-            style={`aspect-ratio: ${work.data.image.width} / ${work.data.image.height};`}
+            style={work.data.image ? `aspect-ratio: ${work.data.image.width} / ${work.data.image.height};` : 'aspect-ratio: 3 / 4;'}
           >
-            <Image
-              src={work.data.image}
-              alt={work.data.title}
-              height={560}
-              densities={[1, 2]}
-              loading={i < 2 ? 'eager' : 'lazy'}
-              draggable="false"
-            />
+            {work.data.image ? (
+              <Image
+                src={work.data.image}
+                alt={work.data.title}
+                height={560}
+                densities={[1, 2]}
+                loading={i < 2 ? 'eager' : 'lazy'}
+                draggable="false"
+              />
+            ) : (
+              <div class="missing">Image missing</div>
+            )}
           </a>
           <figcaption>
             <span class="title" data-title>{work.data.title}</span>
             <span class="meta" data-meta>{workYearCaptionLine2(work)}</span>
           </figcaption>
-          <span class="plate-data" data-full={lightboxImages[i].src} data-alt={work.data.title} hidden></span>
+          <span class="plate-data" data-full={lightboxImages[i]?.src ?? ''} data-alt={work.data.title} hidden></span>
         </figure>
       ))}
     </div>
@@ -64,6 +70,15 @@ const lightboxImages = await Promise.all(
 </div>
 
 <style>
+  .rail-wrap {
+    display: flex;
+    justify-content: flex-start;
+  }
+  /* Not enough works to need scrolling — center the row instead of
+     leaving it flush against the left padding. */
+  .rail-wrap[data-centered='true'] {
+    justify-content: center;
+  }
   .track {
     display: flex;
     align-items: flex-start;
@@ -76,6 +91,7 @@ const lightboxImages = await Promise.all(
     align-items: flex-start;
     flex: 0 0 auto;
     gap: var(--gap);
+    padding-left: var(--pad-x);
     padding-right: var(--gap);
   }
   figure {
@@ -99,6 +115,18 @@ const lightboxImages = await Promise.all(
   }
   .plate:hover img {
     transform: scale(1.03);
+  }
+  .plate .missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--meta);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
   }
   figcaption {
     margin-top: 18px;
@@ -126,13 +154,15 @@ const lightboxImages = await Promise.all(
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
+    min-width: 38px;
     height: 46px;
+    padding: 0 10px;
     background: oklch(0.16 0.004 80);
     border: none;
     color: oklch(0.98 0 0);
     font-size: 16px;
     line-height: 1;
+    white-space: nowrap;
     cursor: pointer;
     opacity: 0.6;
     transition: opacity 200ms;
@@ -140,11 +170,63 @@ const lightboxImages = await Promise.all(
   .rail-btn:hover {
     opacity: 0.95;
   }
+  .rail-btn[data-visible='false'] {
+    display: none;
+  }
+  .rail-prev[data-disabled='true'] {
+    opacity: 0.2;
+    pointer-events: none;
+  }
   .rail-prev {
     left: 0;
   }
   .rail-next {
     right: 0;
+  }
+  .rail-next[data-state='end'] {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0 16px;
+  }
+
+  /* ---------- mobile: vertical stack instead of a horizontal drag rail ---------- */
+  @media (max-width: 899px) {
+    .rail-wrap {
+      display: block;
+    }
+    .track {
+      display: block;
+    }
+    .row {
+      display: block;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    figure {
+      display: block;
+      margin-bottom: clamp(36px, 8vw, 56px);
+    }
+    figure:last-child {
+      margin-bottom: 0;
+    }
+    .plate {
+      height: auto;
+      width: 100%;
+      overflow: visible;
+    }
+    .plate img {
+      width: 100%;
+      height: auto;
+    }
+    .plate .missing {
+      aspect-ratio: 4 / 5;
+      height: auto;
+    }
+    .rail-btn {
+      display: none;
+    }
   }
 
   /* ---------- lightbox ---------- */
@@ -244,43 +326,119 @@ const lightboxImages = await Promise.all(
 
 <script>
   const stage = document.querySelector<HTMLElement>('main');
+  const railWrap = document.querySelector<HTMLElement>('.rail-wrap');
   const track = document.querySelector<HTMLElement>('[data-track]');
   const row = document.querySelector<HTMLElement>('[data-row]');
-  if (stage && track && row) {
+  const prevBtn = document.querySelector<HTMLButtonElement>('[data-rail-prev]');
+  const nextBtn = document.querySelector<HTMLButtonElement>('[data-rail-next]');
+  if (stage && railWrap && track && row && prevBtn && nextBtn) {
     const GAP = 16;
     const WHEEL = 1.1;
     const EASE = 0.14;
-
-    // The authored row is cloned 3× so the rail wraps seamlessly in both directions.
-    for (let i = 0; i < 3; i++) {
-      const clone = row.cloneNode(true) as HTMLElement;
-      clone.setAttribute('aria-hidden', 'true');
-      track.appendChild(clone);
-    }
+    const EPS = 1;
+    const PEEK_FRACTION = 0.4;
 
     let pos = 0;
     let target = 0;
-    let W = 0;
+    let maxScroll = 0;
     let cardStep = 320;
     let running = false;
+    // On first load the rail opens with the first card peeking in from the
+    // right, instead of sitting flush at the start — any interaction
+    // (scroll, drag, or a nav button/key) resolves it to the normal layout.
+    let dismissedPeek = false;
+
+    // Checked live (not cached) so the rail stands down correctly even if
+    // the viewport crosses the breakpoint after load (e.g. resizing).
+    function isMobile() {
+      return window.matchMedia('(max-width: 899px)').matches;
+    }
+    function clamp(v: number) {
+      return Math.max(0, Math.min(v, maxScroll));
+    }
+    function atStart() {
+      return target <= EPS;
+    }
+    function atEnd() {
+      return maxScroll > 0 && target >= maxScroll - EPS;
+    }
+    function updateButtons() {
+      const scrollable = maxScroll > 0;
+      prevBtn!.dataset.visible = String(scrollable);
+      nextBtn!.dataset.visible = String(scrollable);
+      prevBtn!.dataset.disabled = String(atStart());
+      if (atEnd()) {
+        nextBtn!.dataset.state = 'end';
+        nextBtn!.textContent = 'Back to Start';
+        nextBtn!.setAttribute('aria-label', 'Back to start');
+      } else {
+        nextBtn!.dataset.state = '';
+        nextBtn!.textContent = '›';
+        nextBtn!.setAttribute('aria-label', 'Next');
+      }
+    }
+
+    // Snaps straight to flush instead of easing there — the peek-to-flush
+    // distance is huge (it's most of the viewport width), so animating it
+    // like a normal scroll step reads as a stuck/half-loaded rail rather
+    // than a deliberate transition.
+    function dismissPeek() {
+      if (dismissedPeek) return;
+      dismissedPeek = true;
+      pos = 0;
+      target = 0;
+      apply();
+      updateButtons();
+    }
+
+    // A long, unwrapped title is wider than a narrow (portrait) image, and
+    // since figcaption has no width of its own, a flex column container
+    // sizes itself (and the `.plate` sibling that fills its width) to that
+    // title's full width instead of the image's — exposing `.plate`'s grey
+    // background down one side. Capping each caption's max-width to its own
+    // plate's true (aspect-ratio-derived) width makes the caption wrap
+    // instead, and lets the plate settle back to the image's real size.
+    function syncCaptionWidths() {
+      row!.querySelectorAll<HTMLElement>('figure').forEach((fig) => {
+        const plate = fig.querySelector<HTMLElement>('.plate');
+        const figcaption = fig.querySelector<HTMLElement>('figcaption');
+        const match = plate?.getAttribute('style')?.match(/aspect-ratio:\s*([\d.]+)\s*\/\s*([\d.]+)/);
+        if (!plate || !figcaption || !match) return;
+        const ratio = parseFloat(match[1]) / parseFloat(match[2]);
+        const plateHeight = plate.getBoundingClientRect().height;
+        figcaption.style.maxWidth = `${plateHeight * ratio}px`;
+      });
+    }
 
     function measure() {
+      syncCaptionWidths();
       const w = row!.getBoundingClientRect().width;
       if (!w) return;
-      W = w;
+      const stageW = stage!.getBoundingClientRect().width;
+      maxScroll = Math.max(0, w - stageW);
+      railWrap!.dataset.centered = String(maxScroll <= 0);
+      if (dismissedPeek) {
+        target = clamp(target);
+        pos = clamp(pos);
+      } else {
+        const peek = maxScroll > 0 ? stageW * PEEK_FRACTION : 0;
+        pos = -peek;
+        target = -peek;
+      }
       const card = row!.firstElementChild as HTMLElement | null;
       cardStep = card ? card.offsetWidth + GAP : 320;
       apply();
-    }
-    function wrap(x: number) {
-      if (!W) return x;
-      const m = ((x % W) + W) % W;
-      return m === 0 ? 0 : m - W;
+      updateButtons();
     }
     function apply() {
-      track!.style.transform = `translateX(${-W + wrap(pos)}px)`;
+      if (isMobile()) {
+        track!.style.transform = '';
+        return;
+      }
+      track!.style.transform = `translateX(${-pos}px)`;
     }
     function run() {
+      updateButtons();
       if (running) return;
       running = true;
       const tick = () => {
@@ -297,8 +455,25 @@ const lightboxImages = await Promise.all(
       };
       tick();
     }
-    function nudge(dir: number) {
-      target += dir * cardStep;
+    // The rail no longer loops — it stops at the last card, and the "next"
+    // button turns into "Back to Start" instead of wrapping around.
+    function goNext() {
+      // The first click/key just resolves the peek to a flush display of
+      // the same cards — it doesn't also jump ahead to a new one. Only a
+      // second press actually advances.
+      if (!dismissedPeek) {
+        dismissPeek();
+        return;
+      }
+      target = atEnd() ? 0 : clamp(target + cardStep);
+      run();
+    }
+    function goPrev() {
+      if (!dismissedPeek) {
+        dismissPeek();
+        return;
+      }
+      target = clamp(target - cardStep);
       run();
     }
 
@@ -318,26 +493,30 @@ const lightboxImages = await Promise.all(
     stage.addEventListener(
       'wheel',
       (e) => {
+        if (isMobile()) return;
         e.preventDefault();
         if (lightbox?.dataset.open === 'true') return;
+        dismissPeek();
         const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-        target -= d * WHEEL;
+        target = clamp(target + d * WHEEL);
         run();
       },
       { passive: false },
     );
 
-    let drag: { x: number; t: number } | null = null;
+    let drag: { x: number; s: number } | null = null;
     let moved = 0;
     stage.addEventListener('pointerdown', (e) => {
-      drag = { x: e.clientX, t: target };
+      if (isMobile()) return;
+      dismissPeek();
+      drag = { x: e.clientX, s: target };
       moved = 0;
       stage.classList.add('dragging');
     });
     window.addEventListener('pointermove', (e) => {
       if (!drag) return;
       moved = Math.abs(e.clientX - drag.x);
-      target = drag.t + (e.clientX - drag.x);
+      target = clamp(drag.s + (drag.x - e.clientX));
       run();
     });
     window.addEventListener('pointerup', () => {
@@ -345,8 +524,8 @@ const lightboxImages = await Promise.all(
       stage.classList.remove('dragging');
     });
 
-    document.querySelector('[data-rail-prev]')?.addEventListener('click', () => nudge(1));
-    document.querySelector('[data-rail-next]')?.addEventListener('click', () => nudge(-1));
+    prevBtn.addEventListener('click', () => goPrev());
+    nextBtn.addEventListener('click', () => goNext());
 
     // ---------- lightbox ----------
     interface WorkEntry {
@@ -370,6 +549,7 @@ const lightboxImages = await Promise.all(
       if (!lightbox || !lbImg || !lbTitle || !lbMeta || entries.length === 0) return;
       at = (i + entries.length) % entries.length;
       const w = entries[at];
+      if (!w.full) return;
       lbImg.src = w.full;
       lbImg.alt = w.alt;
       lbTitle.textContent = w.title;
@@ -420,8 +600,8 @@ const lightboxImages = await Promise.all(
         else if (e.key === 'ArrowLeft') show(at - 1);
         return;
       }
-      if (e.key === 'ArrowRight') nudge(-1);
-      else if (e.key === 'ArrowLeft') nudge(1);
+      if (e.key === 'ArrowRight') goNext();
+      else if (e.key === 'ArrowLeft') goPrev();
     });
   }
 </script>
