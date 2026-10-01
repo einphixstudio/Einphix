@@ -1,4 +1,4 @@
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import { compareWorks, type Work } from './works';
 
 export interface SeriesEntry {
@@ -41,4 +41,11 @@ export async function getSeriesList(): Promise<SeriesEntry[]> {
 export async function getWorksBySeriesSlug(slug: string): Promise<Work[]> {
   const works = await getCollection('works', ({ data }) => Boolean(data.series) && slugify(data.series!) === slug);
   return works.sort(compareWorks);
+}
+
+// Optional — a series with no row (or a blank one) in series.csv just
+// renders without a description.
+export async function getSeriesDescription(slug: string): Promise<string | undefined> {
+  const entry = await getEntry('seriesInfo', slug);
+  return entry?.data.description;
 }

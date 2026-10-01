@@ -102,6 +102,8 @@ src/
 │   ├── colors.csv                Michaels 丙烯颜料"必买颜色"列表
 │   ├── faq.csv                   FAQ 手风琴
 │   └── settings.csv              区块标题、丙烯颜料介绍等零散设置
+├── content/series/
+│   └── series.csv                每个系列可选的简短说明（Furry Forces 不在这里管）
 ├── components/
 │   ├── SiteHeader.astro        顶部导航 + 下拉菜单 + 移动端菜单（全站共用）
 │   ├── WorkCarousel.astro      首页轮播
@@ -138,6 +140,8 @@ src/
 
 **Studies 的分类是自动生成的**：不是像年份那样写死列表，而是看 CSV 里 `kind=study` 的作品用了哪些 `medium` 值（比如 `watercolor`、`digital`），就自动生成对应的页面和导航下拉菜单项。以后加一种新类型，不用改代码，CSV 里出现了就自动有页面。
 
-**Series 页面也是自动生成的，逻辑跟 Studies 一样**：`works.csv` 里只要有作品填了 `series` 字段，就自动会有对应的 `/series/<系列名>` 页面（用的是跟 Work 年份页一样的横向卷轴 + 灯箱模板），导航栏 Series 下拉也自动跟着更新。**例外**：像 Furry Forces 这种需要专属设计的系列，要在 [series.ts](src/lib/series.ts) 的 `CUSTOM_SERIES_SLUGS` 里加上它的 slug 排除掉，然后单独建一个 `src/pages/series/<系列名>.astro` 手工设计（参照 `furry-forces.astro`）。以后新系列如果没有特殊要求，CSV 里填上 `series` 就完事，不用找我改代码；如果想要单独设计，跟我说一声。
+**Series 页面也是自动生成的，逻辑跟 Studies 一样**：`works.csv` 里只要有作品填了 `series` 字段，就自动会有对应的 `/series/<系列名>` 页面（用的是跟 Work 年份页一样的横向卷轴 + 灯箱模板，标题用的是 Furry Forces 同款的粗体大字），导航栏 Series 下拉也自动跟着更新。**例外**：像 Furry Forces 这种需要专属设计的系列，要在 [series.ts](src/lib/series.ts) 的 `CUSTOM_SERIES_SLUGS` 里加上它的 slug 排除掉，然后单独建一个 `src/pages/series/<系列名>.astro` 手工设计（参照 `furry-forces.astro`）。以后新系列如果没有特殊要求，CSV 里填上 `series` 就完事，不用找我改代码；如果想要单独设计，跟我说一声。
+
+**每个系列可以加一段简短说明（可选）**：编辑 [src/content/series/series.csv](src/content/series/series.csv)，`id`=系列的 slug（跟网址 `/series/<slug>` 里的一样，比如 `dreamscape`），`description`=想显示的说明文字。留空或者压根不加这一行，页面上就不会显示说明——完全可选。**这个文件不管 Furry Forces**，它是单独设计的页面。
 
 `docs/design-handoff/` 保留了最初的设计交付文档（`README.md`、`reference/home.html` 视觉基准、原始设计稿），方便以后对照。

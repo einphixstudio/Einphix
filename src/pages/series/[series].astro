@@ -1,9 +1,9 @@
 ---
+import '@fontsource/hanken-grotesk/800.css';
 import Layout from '../../layouts/Layout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
-import SeriesSwitcher from '../../components/SeriesSwitcher.astro';
 import WorkRail from '../../components/WorkRail.astro';
-import { getSeriesList, getWorksBySeriesSlug } from '../../lib/series';
+import { getSeriesList, getWorksBySeriesSlug, getSeriesDescription } from '../../lib/series';
 
 export async function getStaticPaths() {
   const series = await getSeriesList();
@@ -16,18 +16,43 @@ export async function getStaticPaths() {
 }
 
 const { series, works } = Astro.props;
-const seriesList = await getSeriesList();
+const description = await getSeriesDescription(series.slug);
 ---
 
 <Layout title={`Einphix — Series / ${series.label}`} fitViewportDesktopOnly>
   <SiteHeader current="series" />
+  <div class="series-head">
+    <h1>{series.label}</h1>
+    {description && <p class="description">{description}</p>}
+  </div>
   <main>
-    <SeriesSwitcher series={seriesList} currentSlug={series.slug} />
     {works.length > 0 && <WorkRail works={works} />}
   </main>
 </Layout>
 
 <style>
+  .series-head {
+    flex: 0 0 auto;
+    padding: clamp(32px, 5vw, 64px) var(--pad-x) 0;
+  }
+  h1 {
+    margin: 0;
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(34px, 4.6vw, 52px);
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .description {
+    margin: 14px 0 0;
+    max-width: 60ch;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--meta);
+  }
+
   main {
     position: relative;
     flex: 1 1 auto;

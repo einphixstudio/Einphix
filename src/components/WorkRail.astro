@@ -211,6 +211,9 @@ const lightboxImages = await Promise.all(
     figure:last-child {
       margin-bottom: 0;
     }
+    figcaption {
+      padding: 0 var(--pad-x);
+    }
     .plate {
       height: auto;
       width: 100%;
@@ -336,17 +339,12 @@ const lightboxImages = await Promise.all(
     const WHEEL = 1.1;
     const EASE = 0.14;
     const EPS = 1;
-    const PEEK_FRACTION = 0.4;
 
     let pos = 0;
     let target = 0;
     let maxScroll = 0;
     let cardStep = 320;
     let running = false;
-    // On first load the rail opens with the first card peeking in from the
-    // right, instead of sitting flush at the start — any interaction
-    // (scroll, drag, or a nav button/key) resolves it to the normal layout.
-    let dismissedPeek = false;
 
     // Checked live (not cached) so the rail stands down correctly even if
     // the viewport crosses the breakpoint after load (e.g. resizing).
@@ -378,19 +376,6 @@ const lightboxImages = await Promise.all(
       }
     }
 
-    // Snaps straight to flush instead of easing there — the peek-to-flush
-    // distance is huge (it's most of the viewport width), so animating it
-    // like a normal scroll step reads as a stuck/half-loaded rail rather
-    // than a deliberate transition.
-    function dismissPeek() {
-      if (dismissedPeek) return;
-      dismissedPeek = true;
-      pos = 0;
-      target = 0;
-      apply();
-      updateButtons();
-    }
-
     // A long, unwrapped title is wider than a narrow (portrait) image, and
     // since figcaption has no width of its own, a flex column container
     // sizes itself (and the `.plate` sibling that fills its width) to that
@@ -417,14 +402,8 @@ const lightboxImages = await Promise.all(
       const stageW = stage!.getBoundingClientRect().width;
       maxScroll = Math.max(0, w - stageW);
       railWrap!.dataset.centered = String(maxScroll <= 0);
-      if (dismissedPeek) {
-        target = clamp(target);
-        pos = clamp(pos);
-      } else {
-        const peek = maxScroll > 0 ? stageW * PEEK_FRACTION : 0;
-        pos = -peek;
-        target = -peek;
-      }
+      target = clamp(target);
+      pos = clamp(pos);
       const card = row!.firstElementChild as HTMLElement | null;
       cardStep = card ? card.offsetWidth + GAP : 320;
       apply();
@@ -458,21 +437,10 @@ const lightboxImages = await Promise.all(
     // The rail no longer loops — it stops at the last card, and the "next"
     // button turns into "Back to Start" instead of wrapping around.
     function goNext() {
-      // The first click/key just resolves the peek to a flush display of
-      // the same cards — it doesn't also jump ahead to a new one. Only a
-      // second press actually advances.
-      if (!dismissedPeek) {
-        dismissPeek();
-        return;
-      }
       target = atEnd() ? 0 : clamp(target + cardStep);
       run();
     }
     function goPrev() {
-      if (!dismissedPeek) {
-        dismissPeek();
-        return;
-      }
       target = clamp(target - cardStep);
       run();
     }
@@ -496,7 +464,6 @@ const lightboxImages = await Promise.all(
         if (isMobile()) return;
         e.preventDefault();
         if (lightbox?.dataset.open === 'true') return;
-        dismissPeek();
         const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
         target = clamp(target + d * WHEEL);
         run();
@@ -508,7 +475,6 @@ const lightboxImages = await Promise.all(
     let moved = 0;
     stage.addEventListener('pointerdown', (e) => {
       if (isMobile()) return;
-      dismissPeek();
       drag = { x: e.clientX, s: target };
       moved = 0;
       stage.classList.add('dragging');

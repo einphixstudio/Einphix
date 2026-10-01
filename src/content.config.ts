@@ -247,6 +247,18 @@ const classSettings = defineCollection({
   }),
 });
 
+// ---------- Series page ----------
+// Optional per-series blurb for the generic /series/<slug> template (not
+// Furry Forces, which is hand-built). Keyed by the same slug getSeriesList()
+// derives from works.csv's `series` column. A series with no row here (or a
+// blank description) just doesn't show one — this file is entirely optional.
+const seriesInfo = defineCollection({
+  loader: file('src/content/series/series.csv', { parser: parseCsv }),
+  schema: z.object({
+    description: z.preprocess(emptyToUndefined, z.string().optional()),
+  }),
+});
+
 export const collections = {
   works,
   commissionPricing,
@@ -257,4 +269,5 @@ export const collections = {
   classColors,
   classFaq,
   classSettings,
+  seriesInfo,
 };
