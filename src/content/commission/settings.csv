@@ -1,11 +1,11 @@
-﻿id,value
-promoEnabled,TRUE
-promoText,🎄 Christmas Special — 20% off all commissions! December 1 – January 10.
-promoStart,
-promoEnd,2027-01-10
-heroHeading,Experience a unique custom painting made just for you
-heroSubtext,I enjoy creating art with special meaning and connection for my collectors.
-heroImageId,2023-commission-portrait1
+﻿id,value,,
+promoEnabled,TRUE,,
+promoText,"🎄 Christmas Special — 20% off all commissions! December 1,2026 – January 10,2017.",,
+promoStart,,,
+promoEnd,2027-01-10,,
+heroHeading,Experience a unique custom painting made just for you,,
+heroSubtext,I enjoy creating art with special meaning and connection for my collectors.,,
+heroImageId,2023-commission-portrait1,,
 pricingIntro,Below are example starting prices for common sizes. The final price depends on complexity, size, and any unique requirements.
-depositText,A 50% deposit is required to secure your booking before I begin painting. The final 50% is due upon completion.
-bookingEmail,einphix@gmail.com
+depositText,A 50% deposit is required to secure your booking before I begin painting. The final 50% is due upon completion.,,
+bookingEmail,einphix@gmail.com,,
