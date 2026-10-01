@@ -264,6 +264,42 @@ const seriesInfo = defineCollection({
   }),
 });
 
+// ---------- About page ----------
+// Portrait photo + bio copy, kept out of works.csv since it isn't artwork.
+// `photo.csv` holds exactly one row (same id+imageExt filename convention as
+// works/class); `settings.csv` is the page heading; `paragraphs.csv` is an
+// ordered list so a paragraph can be added, removed, or reworded without
+// touching code.
+
+const aboutPhoto = defineCollection({
+  loader: file('src/content/about/photo.csv', {
+    parser: (text) =>
+      parseCsv(text).map((row) => ({
+        ...row,
+        image: row.imageExt ? `${row.id}.${row.imageExt}` : undefined,
+      })),
+  }),
+  schema: ({ image }) =>
+    z.object({
+      image: image().optional(),
+    }),
+});
+
+const aboutSettings = defineCollection({
+  loader: file('src/content/about/settings.csv', { parser: parseCsv }),
+  schema: z.object({
+    value: z.string(),
+  }),
+});
+
+const aboutParagraphs = defineCollection({
+  loader: file('src/content/about/paragraphs.csv', { parser: parseCsv }),
+  schema: z.object({
+    order: z.coerce.number(),
+    text: z.string(),
+  }),
+});
+
 export const collections = {
   works,
   commissionPricing,
@@ -275,4 +311,7 @@ export const collections = {
   classFaq,
   classSettings,
   seriesInfo,
+  aboutPhoto,
+  aboutSettings,
+  aboutParagraphs,
 };

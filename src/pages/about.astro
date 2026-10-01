@@ -2,53 +2,36 @@
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { Picture } from 'astro:assets';
-import { getCollection } from 'astro:content';
+import { getAboutPhoto, getSetting, getParagraphs } from '../lib/about';
 
-const works = await getCollection('works');
-const portrait = works.find((w) => w.id === '2017-crowned bunny girl');
+const photo = await getAboutPhoto();
+const heading = (await getSetting('heading')) ?? 'About Me';
+const paragraphs = await getParagraphs();
 ---
 
 <Layout title="Einphix — About">
   <SiteHeader current="about" />
   <main>
     <div class="about">
-      {portrait && (
-        <div class="portrait">
-          {portrait.data.image ? (
-            <Picture
-              src={portrait.data.image}
-              alt={portrait.data.title}
-              formats={['avif', 'webp']}
-              fallbackFormat="jpeg"
-              width={700}
-              loading="eager"
-            />
-          ) : (
-            <div class="missing">Image missing</div>
-          )}
-        </div>
-      )}
+      <div class="portrait">
+        {photo ? (
+          <Picture
+            src={photo}
+            alt={heading}
+            formats={['avif', 'webp']}
+            fallbackFormat="jpeg"
+            width={700}
+            loading="eager"
+          />
+        ) : (
+          <div class="missing">Image missing</div>
+        )}
+      </div>
       <div class="copy">
-        <h1>About Me</h1>
-        <p>
-          Hello, I go by the pseudonym Einphix, and I’ve been wielding brushes and pencils since as
-          far back as I can remember. I started taking art lessons at 11. By the time I reached
-          college age, I was accepted into an art school, but ended up studying in the United States
-          instead, and didn’t continue pursuing painting. After graduation, I became a product
-          designer. However, over time, I realized that I still loved painting the most. A few years
-          after moving to the United States, I picked up the brush again, painting sporadically. So, I
-          consider myself a self-taught artist.
-        </p>
-        <p>
-          My paintings don’t have a fixed style or theme; I enjoy experimenting with new techniques
-          and exploring different styles. I still haven’t found a style or direction that I completely
-          love. However, I’ve always had peculiar dreams since childhood—dreams of being underwater,
-          going to outer space, experiencing the end of the world, and navigating underground mazes.
-          In those dreams, I always had a unique feeling—not happy, not sad, but a sensation that only
-          exists in the dream world, captivating me. Only once, while cliff diving in Mexico, did I
-          momentarily blur the lines between reality and dream. Since then, I’ve been striving to
-          capture the feeling of those dreams in my artwork.
-        </p>
+        <h1>{heading}</h1>
+        {paragraphs.map((text) => (
+          <p>{text}</p>
+        ))}
       </div>
     </div>
   </main>
