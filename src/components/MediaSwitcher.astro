@@ -3,7 +3,7 @@ import type { StudyMedium } from '../lib/studies';
 
 interface Props {
   media: StudyMedium[];
-  currentSlug?: string;
+  currentSlug: string;
 }
 
 const { media, currentSlug } = Astro.props;
@@ -11,7 +11,6 @@ const { media, currentSlug } = Astro.props;
 
 <div class="media-switcher">
   <nav>
-    <a href="/studies" aria-current={currentSlug === undefined ? 'page' : undefined}>All</a>
     {media.map((m) => (
       <a href={`/studies/${m.slug}`} aria-current={m.slug === currentSlug ? 'page' : undefined}>
         {m.label}

@@ -56,7 +56,13 @@ const seriesItems = [
       </div>
     </div>
     <div class="has-menu">
-      <a class="nav-link" href="/studies" aria-current={current === 'studies' ? 'page' : undefined}>Studies</a>
+      <a
+        class="nav-link"
+        href={studyMedia.length > 0 ? `/studies/${studyMedia[0].slug}` : '/studies'}
+        aria-current={current === 'studies' ? 'page' : undefined}
+      >
+        Studies
+      </a>
       {studyMedia.length > 0 && (
         <div class="menu">
           {studyMedia.map((m) => (

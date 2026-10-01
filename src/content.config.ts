@@ -77,6 +77,10 @@ const normalizeKind = (v: unknown) => {
   const trimmed = s.trim();
   if (/^stud/i.test(trimmed)) return 'study';
   if (/^comm/i.test(trimmed)) return 'commission';
+  // A piece with its own series page that shouldn't also clutter a
+  // Work-year page — the `series` CSV field still puts it on that page
+  // regardless of `kind`; this just keeps it OUT of Work/Studies.
+  if (/^seri/i.test(trimmed)) return 'series';
   return 'work';
 };
 // Same vocabulary as `kind`, but for the optional *second* page a work
@@ -89,6 +93,7 @@ const normalizeKind2 = (v: unknown) => {
   const trimmed = s.trim();
   if (/^stud/i.test(trimmed)) return 'study';
   if (/^comm/i.test(trimmed)) return 'commission';
+  if (/^seri/i.test(trimmed)) return 'series';
   if (/^work/i.test(trimmed)) return 'work';
   return undefined;
 };
@@ -132,13 +137,13 @@ const works = defineCollection({
       image: image().optional(),
       description: z.preprocess(emptyToUndefined, z.string().optional()),
       series: z.preprocess(emptyToUndefined, z.string().optional()),
-      kind: z.preprocess(normalizeKind, z.enum(['work', 'study', 'commission'])),
+      kind: z.preprocess(normalizeKind, z.enum(['work', 'study', 'commission', 'series'])),
       // kind2: lets a piece also appear on a second page (e.g. kind=study,
       // kind2=work shows it on both its Studies page and its Work-year
       // page). kind2Order is its pin-order on that *second* page only —
       // kept separate from `order` for the same reason featuredOrder is
       // separate: a piece's place on each page is an independent decision.
-      kind2: z.preprocess(normalizeKind2, z.enum(['work', 'study', 'commission']).optional()),
+      kind2: z.preprocess(normalizeKind2, z.enum(['work', 'study', 'commission', 'series']).optional()),
       featured: z.preprocess(isTrue, z.boolean()),
       // featuredOrder: home carousel sequence (only meaningful when featured).
       // order: manual "pin to the front" for the Work year / Studies pages.

@@ -1,5 +1,5 @@
 import { getCollection } from 'astro:content';
-import { compareWorks, formatDimensions, formatMediumSurface, type Work } from './works';
+import { compareWorks, type Work } from './works';
 
 export interface StudyMedium {
   slug: string;
@@ -35,11 +35,4 @@ export async function getStudyMedia(): Promise<StudyMedium[]> {
 export async function getStudiesByMediumSlug(slug: string): Promise<Work[]> {
   const studies = await getStudies();
   return studies.filter((s) => slugify(s.data.medium) === slug);
-}
-
-export function studyCaption(work: Work): string {
-  const { medium, surface, dimensions, year } = work.data;
-  const phrase = formatMediumSurface(medium, surface);
-  const capitalized = phrase.charAt(0).toUpperCase() + phrase.slice(1);
-  return `${capitalized}, ${formatDimensions(dimensions)}, ${year}.`;
 }

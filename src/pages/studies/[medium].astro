@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import MediaSwitcher from '../../components/MediaSwitcher.astro';
-import StudyGrid from '../../components/StudyGrid.astro';
+import WorkRail from '../../components/WorkRail.astro';
 import { getStudyMedia, getStudiesByMediumSlug } from '../../lib/studies';
 
 export async function getStaticPaths() {
@@ -19,19 +19,34 @@ const { medium, studies } = Astro.props;
 const media = await getStudyMedia();
 ---
 
-<Layout title={`Einphix — Studies / ${medium.label}`}>
+<Layout title={`Einphix — Studies / ${medium.label}`} fitViewportDesktopOnly>
   <SiteHeader current="studies" />
   <main>
     <MediaSwitcher media={media} currentSlug={medium.slug} />
-    <StudyGrid studies={studies} />
+    {studies.length > 0 && <WorkRail works={studies} />}
   </main>
 </Layout>
 
 <style>
   main {
+    position: relative;
     flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    padding-top: clamp(20px, 3vw, 40px);
+    justify-content: center;
+    overflow: hidden;
+    cursor: grab;
+  }
+  main:global(.dragging) {
+    cursor: grabbing;
+  }
+
+  @media (max-width: 899px) {
+    main {
+      justify-content: flex-start;
+      overflow: visible;
+      cursor: default;
+    }
   }
 </style>

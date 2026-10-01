@@ -34,8 +34,8 @@ npm run preview  # 本地预览构建结果
    | `surface` | 画在什么上面，没有就留空（比如数字绘画） | `canvas` / `board` / `paper` / `gessoed paper` / `sketchbook` |
    | `dimensions` | 尺寸，**只写数字**，不用写 "in"，网站会自动补上——`14x14`、`14 x 14`、`7.5x9.5` 怎么写都行 | `14x14` |
    | `series` | 所属系列，没有就留空。填了之后自动会有一个 `/series/<系列名>` 页面（用跟 Work 年份页一样的横向卷轴 + 灯箱），导航栏 Series 下拉也会自动多一项，不用改代码——除非这个系列需要特殊设计（像 Furry Forces 那样），那种要专门跟我说 | `dreamscape` |
-   | `kind` | `work`（按年份放进 Work 页面）、`study`（探索性作品，比如 CG、水粉、跟主风格不搭的尝试——放进 Studies 分类）或 `commission`（委托作品，不会出现在 Work 或 Studies 任何页面——比如 Commission 页面头图这种，只是单独被某个页面点名引用的画，不需要出现在作品列表里），留空默认 `work`。大小写、单复数都认（`study`/`studies`、`commission`/`commissions`） | |
-   | `kind2` | 可选，**让这张画同时出现在第二个分类的页面里**。比如一张画 `kind=study`、`kind2=work`，就会同时出现在它的 Studies 分类页**和**对应年份的 Work 页面。取值范围跟 `kind` 一样（`work`/`study`/`commission`），留空就是没有第二个分类 | `work` |
+   | `kind` | `work`（按年份放进 Work 页面）、`study`（探索性作品，比如 CG、水粉、跟主风格不搭的尝试——放进 Studies 分类）、`commission`（委托作品，不会出现在 Work 或 Studies 任何页面——比如 Commission 页面头图这种，只是单独被某个页面点名引用的画，不需要出现在作品列表里）或 `series`（这张画只在它自己的 Series 页面出现，不会出现在 Work 年份页——`series` 字段照常决定它属于哪个系列，这里只是不让它重复出现在 Work 页面），留空默认 `work`。大小写、单复数都认（`study`/`studies`、`commission`/`commissions`、`series`） | `series` |
+   | `kind2` | 可选，**让这张画同时出现在第二个分类的页面里**。比如一张画 `kind=study`、`kind2=work`，就会同时出现在它的 Studies 分类页**和**对应年份的 Work 页面。取值范围跟 `kind` 一样（`work`/`study`/`commission`/`series`），留空就是没有第二个分类 | `work` |
    | `featured` | 是否出现在首页轮播，`TRUE`/`FALSE` | `TRUE` |
    | `featuredOrder` | **只管首页轮播**的顺序，数字越小越靠前。只有 `featured=TRUE` 才有意义 | `1` |
    | `order` | **只管这张画在自己主分类（`kind`）对应页面里排第几**，数字越小越靠前，跟首页轮播完全无关。填了就"置顶"到该年份/该类型页面最前面（在其它同样填了 `order` 的画之间按数字排）；不填就按年份新到旧自然排在后面 | `1` |
@@ -109,8 +109,7 @@ src/
 │   ├── WorkCarousel.astro      首页轮播
 │   ├── YearSwitcher.astro      作品年份页的年份切换条
 │   ├── WorkRail.astro          作品年份页的横向轨道 + 点击放大（灯箱）
-│   ├── MediaSwitcher.astro     Studies 页面的类型切换条（All / Watercolor / ...）
-│   └── StudyGrid.astro         Studies 页面的瀑布流 + 点击放大（灯箱）
+│   └── MediaSwitcher.astro     Studies 页面的类型切换条（Watercolor / Oil / ...，跟 Work 年份页的 YearSwitcher 是同一个用法）
 ├── layouts/Layout.astro        页面外层（字体、meta）
 ├── lib/
 │   ├── works.ts                 首页轮播用的数据函数
@@ -130,15 +129,14 @@ src/
     │   └── [series].astro        其它系列的通用页，如 /series/dreamscape
     ├── work/[bucket].astro      作品年份页，如 /work/2025-2024
     └── studies/
-        ├── index.astro           /studies，显示所有 study 作品
-        └── [medium].astro        /studies/watercolor 等，按类型筛选
+        └── [medium].astro        /studies/watercolor 等，按类型筛选（跟 work/[bucket].astro 用的是同一套横向卷轴模板）
 ```
 
-已经做好的页面：首页（`/`）、About（`/about`）、Commission（`/commission`）、Class（`/class`）、Series 系列页（`/series/<系列名>`）、作品年份页（`/work/2026`、`/work/2025-2024` 等 6 个年份区间，2026 单独一档）、Studies（`/studies` 和 `/studies/<类型>`）。
+已经做好的页面：首页（`/`）、About（`/about`）、Commission（`/commission`）、Class（`/class`）、Series 系列页（`/series/<系列名>`）、作品年份页（`/work/2026`、`/work/2025-2024` 等 6 个年份区间，2026 单独一档）、Studies（`/studies/<类型>`，没有汇总所有类型的 `/studies` 页面）。
 
 年份区间写在 [workBuckets.ts](src/lib/workBuckets.ts) 的 `YEAR_BUCKETS` 里，以后年份不够用了（比如要加 2027），去那改。
 
-**Studies 的分类是自动生成的**：不是像年份那样写死列表，而是看 CSV 里 `kind=study` 的作品用了哪些 `medium` 值（比如 `watercolor`、`digital`），就自动生成对应的页面和导航下拉菜单项。以后加一种新类型，不用改代码，CSV 里出现了就自动有页面。
+**Studies 的分类是自动生成的**：不是像年份那样写死列表，而是看 CSV 里 `kind=study` 的作品用了哪些 `medium` 值（比如 `watercolor`、`digital`），就自动生成对应的页面和导航下拉菜单项。以后加一种新类型，不用改代码，CSV 里出现了就自动有页面。Studies 页面现在跟 Work 年份页用的是同一个横向卷轴 + 灯箱模板（`WorkRail.astro`），没有汇总所有类型的 "ALL" 页面——导航栏的 Studies 直接链到第一个类型。
 
 **Series 页面也是自动生成的，逻辑跟 Studies 一样**：`works.csv` 里只要有作品填了 `series` 字段，就自动会有对应的 `/series/<系列名>` 页面（用的是跟 Work 年份页一样的横向卷轴 + 灯箱模板，标题用的是 Furry Forces 同款的粗体大字），导航栏 Series 下拉也自动跟着更新。**例外**：像 Furry Forces 这种需要专属设计的系列，要在 [series.ts](src/lib/series.ts) 的 `CUSTOM_SERIES_SLUGS` 里加上它的 slug 排除掉，然后单独建一个 `src/pages/series/<系列名>.astro` 手工设计（参照 `furry-forces.astro`）。以后新系列如果没有特殊要求，CSV 里填上 `series` 就完事，不用找我改代码；如果想要单独设计，跟我说一声。
 
