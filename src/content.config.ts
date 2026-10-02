@@ -264,6 +264,21 @@ const seriesInfo = defineCollection({
   }),
 });
 
+// ---------- Studies page ----------
+// Studies categories are still auto-derived from whatever `medium` values
+// show up on study-kind works (see studies.ts) — this file only controls
+// the *display order* of those tabs. Keyed by the same slug studies.ts
+// derives (lowercased, spaces/punctuation to dashes). A medium with no row
+// here — e.g. a brand new one just added to works.csv — simply falls back
+// to the automatic "most recently painted first" ordering, so this file
+// never has to be kept in lockstep with works.csv to avoid breaking.
+const studyMediaOrder = defineCollection({
+  loader: file('src/content/studies/order.csv', { parser: parseCsv }),
+  schema: z.object({
+    order: z.coerce.number(),
+  }),
+});
+
 // ---------- About page ----------
 // Portrait photo + bio copy, kept out of works.csv since it isn't artwork.
 // `photo.csv` holds exactly one row (same id+imageExt filename convention as
@@ -311,6 +326,7 @@ export const collections = {
   classFaq,
   classSettings,
   seriesInfo,
+  studyMediaOrder,
   aboutPhoto,
   aboutSettings,
   aboutParagraphs,

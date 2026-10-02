@@ -22,6 +22,10 @@ export async function getStudies(): Promise<Work[]> {
   return studies.sort((a, b) => compareWorks(a, b, 'study'));
 }
 
+// Default order (when a medium has no row in order.csv): most recently
+// painted medium first — the original automatic behavior, kept as a
+// fallback so a brand-new medium always gets a sensible spot without
+// needing a CSV edit first.
 export async function getStudyMedia(): Promise<StudyMedium[]> {
   const studies = await getStudies();
   const bySlug = new Map<string, string>();
@@ -29,7 +33,21 @@ export async function getStudyMedia(): Promise<StudyMedium[]> {
     const slug = slugify(s.data.medium);
     if (!bySlug.has(slug)) bySlug.set(slug, s.data.medium);
   }
-  return [...bySlug.entries()].map(([slug, label]) => ({ slug, label }));
+  const media = [...bySlug.entries()].map(([slug, label], i) => ({ slug, label, autoOrder: i }));
+
+  const orderRows = await getCollection('studyMediaOrder');
+  const orderBySlug = new Map(orderRows.map((r) => [r.id, r.data.order]));
+
+  return media
+    .sort((a, b) => {
+      const aOrder = orderBySlug.get(a.slug);
+      const bOrder = orderBySlug.get(b.slug);
+      if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
+      if (aOrder !== undefined) return -1;
+      if (bOrder !== undefined) return 1;
+      return a.autoOrder - b.autoOrder;
+    })
+    .map(({ slug, label }) => ({ slug, label }));
 }
 
 export async function getStudiesByMediumSlug(slug: string): Promise<Work[]> {

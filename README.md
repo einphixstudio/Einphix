@@ -143,6 +143,8 @@ src/
 
 **Studies 的分类是自动生成的**：不是像年份那样写死列表，而是看 CSV 里 `kind=study` 的作品用了哪些 `medium` 值（比如 `watercolor`、`digital`），就自动生成对应的页面和导航下拉菜单项。以后加一种新类型，不用改代码，CSV 里出现了就自动有页面。Studies 页面现在跟 Work 年份页用的是同一个横向卷轴 + 灯箱模板（`WorkRail.astro`），没有汇总所有类型的 "ALL" 页面——导航栏的 Studies 直接链到第一个类型。
 
+**Studies 导航栏里几个类型的先后顺序**由 [content/studies/order.csv](src/content/studies/order.csv) 控制——`id` 是类型名（小写），`order` 是数字，数字小的排前面，想调顺序直接改数字就行。如果加了一个新 medium 但还没来得及在这个表里登记，它会自动排到"自动顺序"里（按这个类型最新一张作品的年份，新的排前面），不会漏掉。
+
 **Series 页面也是自动生成的，逻辑跟 Studies 一样**：`works.csv` 里只要有作品填了 `series` 字段，就自动会有对应的 `/series/<系列名>` 页面（用的是跟 Work 年份页一样的横向卷轴 + 灯箱模板，标题用的是 Furry Forces 同款的粗体大字），导航栏 Series 下拉也自动跟着更新。**例外**：像 Furry Forces 这种需要专属设计的系列，要在 [series.ts](src/lib/series.ts) 的 `CUSTOM_SERIES_SLUGS` 里加上它的 slug 排除掉，然后单独建一个 `src/pages/series/<系列名>.astro` 手工设计（参照 `furry-forces.astro`）。以后新系列如果没有特殊要求，CSV 里填上 `series` 就完事，不用找我改代码；如果想要单独设计，跟我说一声。
 
 **About 页面的头像和正文都是 CSV 驱动的**：头像照片在 [content/about/photo.csv](src/content/about/photo.csv)（只有一行，`id` + 后缀，照片文件本身也放在这个文件夹，文件名 = `<id>.<后缀>`，换照片直接改这两处），页面标题在 [settings.csv](src/content/about/settings.csv) 的 `heading`，正文每一段是 [paragraphs.csv](src/content/about/paragraphs.csv) 里的一行，按 `order` 排——想加一段/删一段/调顺序，直接在这个表里加行、删行、改数字就行，不用改代码。
