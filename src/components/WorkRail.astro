@@ -133,15 +133,23 @@ const lightboxImages = await Promise.all(
     display: flex;
     flex-direction: column;
     gap: 6px;
+    /* Reserves room for a 2-line title so a figure's total height (and
+       therefore the plate's vertical position once the rail is centered in
+       `main`) never shifts depending on whether that page's longest title
+       happens to wrap to one line or two — the image sits at the same
+       height everywhere, and a short title just leaves blank space below. */
+    min-height: calc(2 * 13px * 1.4 + 6px + 12px * 1.4);
   }
   .title {
     font-size: 13px;
+    line-height: 1.4;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--ink-soft);
   }
   .meta {
     font-size: 12px;
+    line-height: 1.4;
     letter-spacing: 0.01em;
     color: var(--meta);
   }

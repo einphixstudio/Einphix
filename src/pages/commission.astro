@@ -5,17 +5,29 @@ import { Picture } from 'astro:assets';
 import { getEntry } from 'astro:content';
 import { getSetting, isPromoActive, getPricingRows, getSteps, getAddons } from '../lib/commission';
 
-const [heroHeading, heroSubtext, heroImageId, showPromo, promoText, pricingIntro, depositText, bookingEmail] =
-  await Promise.all([
-    getSetting('heroHeading'),
-    getSetting('heroSubtext'),
-    getSetting('heroImageId'),
-    isPromoActive(),
-    getSetting('promoText'),
-    getSetting('pricingIntro'),
-    getSetting('depositText'),
-    getSetting('bookingEmail'),
-  ]);
+const [
+  heroHeading,
+  heroSubtext,
+  heroImageId,
+  showPromo,
+  promoText,
+  pricingIntro,
+  pricingTitleAnimal,
+  pricingTitlePortrait,
+  depositText,
+  bookingEmail,
+] = await Promise.all([
+  getSetting('heroHeading'),
+  getSetting('heroSubtext'),
+  getSetting('heroImageId'),
+  isPromoActive(),
+  getSetting('promoText'),
+  getSetting('pricingIntro'),
+  getSetting('pricingTitleAnimal'),
+  getSetting('pricingTitlePortrait'),
+  getSetting('depositText'),
+  getSetting('bookingEmail'),
+]);
 const [pricing, steps, addons] = await Promise.all([getPricingRows(), getSteps(), getAddons()]);
 const heroWork = heroImageId ? await getEntry('works', heroImageId) : undefined;
 
@@ -68,7 +80,7 @@ const promoMessage = promoIcon ? promoText!.slice(promoIconMatch![0].length) : p
       {pricing.length > 0 && (
         <div class="price-cards">
           <div class="price-card">
-            <h3>Pet & Landscape</h3>
+            <h3>{pricingTitleAnimal}</h3>
             <ul>
               {pricing.map((row) => (
                 <li>
@@ -79,7 +91,7 @@ const promoMessage = promoIcon ? promoText!.slice(promoIconMatch![0].length) : p
             </ul>
           </div>
           <div class="price-card">
-            <h3>Human Portrait</h3>
+            <h3>{pricingTitlePortrait}</h3>
             <ul>
               {pricing.map((row) => (
                 <li>
@@ -224,7 +236,6 @@ const promoMessage = promoIcon ? promoText!.slice(promoIconMatch![0].length) : p
   }
   .pricing .intro {
     margin: 0 0 24px;
-    max-width: 60ch;
     font-size: 14px;
     line-height: 1.65;
     color: var(--meta);
